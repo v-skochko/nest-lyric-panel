@@ -1,11 +1,15 @@
 {
   "domain": "nest_lyric_panel",
   "name": "Nest Lyric Panel",
-  "version": "0.1.1",
+  "codeowners": [
+    "@v-skochko"
+  ],
   "config_flow": true,
-  "dependencies": ["http"],
+  "dependencies": [
+    "http"
+  ],
   "documentation": "https://github.com/v-skochko/nest-lyric-panel",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/v-skochko/nest-lyric-panel/issues",
-  "codeowners": ["@v-skochko"],
-  "iot_class": "cloud_polling"
+  "version": "0.1.1"
 }
