@@ -1,0 +1,44 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>body { margin: 0 } nest-lyric-display { display:block; height:550px; }</style>
+<nest-lyric-display></nest-lyric-display>
+<pre id="result">waiting</pre>
+<script type="module">
+import "../custom_components/nest_lyric_panel/frontend/nest-lyric-display.js";
+const card=document.querySelector('nest-lyric-display');
+const calls=[];
+const attrs=(artist,title)=>({media_title:title,media_artist:artist,media_duration:100,media_position:25,media_position_updated_at:new Date().toISOString(),supported_features:8322623});
+const h={
+  language:'en',
+  states:{
+    'input_select.test_room':{state:'Room A'},
+    'input_select.test_source':{state:'Music'},
+    'media_player.a_ma':{state:'playing',attributes:attrs('Artist A','Track A')},
+    'media_player.a_speaker':{state:'playing',attributes:attrs('Artist Cast','Track Cast')},
+    'media_player.a_cast':{state:'idle',attributes:{}},
+    'media_player.b_ma':{state:'playing',attributes:attrs('Artist B','Track B')},
+    'media_player.b_speaker':{state:'playing',attributes:attrs('Artist B Cast','Track B Cast')},
+    'media_player.b_cast':{state:'idle',attributes:{}}
+  },
+  callService:async(domain,service,data)=>calls.push({domain,service,data}),
+  callWS:async(msg)=>msg.type.endsWith('/lookup')?{status:'found',syncedLyrics:'[00:00.00]First original\n[00:20.00]Second original',duration:100}:msg.type.endsWith('/mode')?1:{status:'ok',translatedText:msg.text.map(()=> 'Переклад')},
+  hassUrl:p=>p
+};
+card.setConfig({room_selector:'input_select.test_room',source_selector:'input_select.test_source',rooms:{
+  'Room A':{music_assistant:'media_player.a_ma',physical:'media_player.a_speaker',cast:'media_player.a_cast'},
+  'Room B':{music_assistant:'media_player.b_ma',physical:'media_player.b_speaker',cast:'media_player.b_cast'}
+},lyrics:{sync_offset:1}});
+card.hass=h;
+await new Promise(r=>setTimeout(r,150));
+const results={initialPlayer:card.player,initialTitle:card.shadowRoot.querySelector('.name-box.song .name-text').textContent,lyricTag:card.lyric.tagName,lyricOffset:card.lyric.config.sync_offset};
+card.shadowRoot.querySelector('[data-command="media_next_track"]').click();
+h.states['input_select.test_room'].state='Room B';card.hass=h;
+results.roomPlayer=card.player;
+h.states['media_player.b_cast']={state:'playing',attributes:{app_name:'YouTube Music'}};card.hass=h;
+results.youtubePlayer=card.player;results.youtubeTitle=card.shadowRoot.querySelector('.name-box.song .name-text').textContent;
+card.shadowRoot.querySelector('[data-command="volume_up"]').click();
+const bar=card.shadowRoot.querySelector('.bar');bar.value='50';bar.dispatchEvent(new Event('change'));
+results.calls=calls;results.width=innerWidth;results.displayWidth=card.getBoundingClientRect().width;
+const single=document.createElement('nest-lyric-display');document.body.append(single);single.setConfig({entity:'media_player.a_ma'});single.hass=h;results.singlePlayer=single.player;
+document.querySelector('#result').textContent=JSON.stringify(results);
+</script>

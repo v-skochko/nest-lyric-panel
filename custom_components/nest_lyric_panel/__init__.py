@@ -108,7 +108,11 @@ async def translate(hass,connection,msg):
 
 async def async_setup(hass:HomeAssistant,config):
     hass.data[DOMAIN]={'cache':{},'settings':{}}
-    await hass.http.async_register_static_paths([StaticPathConfig('/nest_lyric_panel/nest-lyric-panel.js',str(Path(__file__).parent/'frontend'/'nest-lyric-panel.js'),True)])
+    frontend=Path(__file__).parent/'frontend'
+    await hass.http.async_register_static_paths([
+        StaticPathConfig('/nest_lyric_panel/nest-lyric-panel.js',str(frontend/'nest-lyric-panel.js'),True),
+        StaticPathConfig('/nest_lyric_panel/nest-lyric-display.js',str(frontend/'nest-lyric-display.js'),True),
+    ])
     websocket_api.async_register_command(hass,lookup)
     websocket_api.async_register_command(hass,translate)
     websocket_api.async_register_command(hass,mode)

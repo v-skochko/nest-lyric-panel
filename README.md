@@ -9,7 +9,7 @@ A Home Assistant integration and dashboard card for time-synced and plain song l
 - LRCLIB lookup by artist, track, album and duration; exact metadata is important.
 - Timestamped lyrics follow the playback position. Plain lyrics can be scrolled manually.
 - Configurable timing offset and maximum difference between lyrics and track durations.
-- One reusable card with a compact display option for Nest Hub and a layout for larger displays.
+- A reusable lyrics card and a complete Nest Hub / TV display with artwork, playback controls, seek, track and artist.
 - Optional English-to-Ukrainian translation via a separate compatible endpoint. Without it, original lyrics still work.
 - English and Ukrainian interface text. Five numeric modes are shared by the card and the backend.
 
@@ -21,7 +21,7 @@ Requires Home Assistant 2026.11 or later. The Marketplace is available in Home A
 
 1. In **Settings → Marketplace**, add `https://github.com/v-skochko/nest-lyric-panel` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
 2. Restart Home Assistant. In **Settings → Devices & services**, add **Nest Lyric Panel**. Translation is off by default.
-3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-panel.js?v=0.1.1` as a **JavaScript module**. The integration must be loaded to serve this file. Reload the browser or restart the Cast view.
+3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.2.0` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
 4. Add the card using YAML:
 
 ```yaml
@@ -34,6 +34,42 @@ translation_font_size: 18
 sync_offset: 0
 show_mode: true
 ```
+
+When upgrading from 0.1.x, replace the earlier `/nest_lyric_panel/nest-lyric-panel.js?v=0.1.1` resource with the display resource above rather than registering both versions. The display resource imports the lyrics card itself.
+
+For the full Nest/TV display use a panel view with a single card:
+
+```yaml
+type: custom:nest-lyric-display
+entity: media_player.living_room
+lyrics:
+  sync_offset: 1
+  language: en
+```
+
+The selected player supplies the artwork, metadata and controls. Buttons are disabled when the player does not support the relevant feature. A configurable room selector and a Music Assistant/YouTube player mapping are also supported:
+
+```yaml
+type: custom:nest-lyric-display
+room_selector: input_select.speaker_room
+source_selector: input_select.music_source
+youtube_source: YouTube
+rooms:
+  Kitchen:
+    music_assistant: media_player.kitchen_ma
+    physical: media_player.kitchen_speaker
+    cast: media_player.kitchen_cast
+  Living room:
+    music_assistant: media_player.living_room_ma
+    physical: media_player.living_room_speaker
+    cast: media_player.living_room_cast
+lyrics:
+  sync_offset: 1
+```
+
+Map the room names exactly as they appear in the selector. `physical` and `cast` are optional, defaulting to the primary player. The card chooses the physical player when the mapped Cast player is active in YouTube, or when YouTube is selected and the physical player is active. With no matching room it displays no player. The nested `lyrics` object accepts the card options below; the display sets entity and height.
+
+To cast the view automatically, import [the optional automation blueprint](https://github.com/v-skochko/nest-lyric-panel/blob/main/blueprints/automation/nest_lyric_panel/cast_display.yaml) into Home Assistant and select your media player, Cast display and dashboard/view paths. It monitors one player, retries while that player is playing, and can interrupt other content on the display. Existing automations can instead continue using Home Assistant's `cast.show_lovelace_view` action. The blueprint is an optional separate import, not automatically installed by the integration.
 
 For manual installation, copy `custom_components/nest_lyric_panel` to the corresponding `custom_components` directory in your Home Assistant configuration, then follow steps 2–4. The dashboard resource is a separate step even when the integration is installed by Marketplace.
 
@@ -107,6 +143,7 @@ The private installation's Pisni.in.ua fallback is not included in this initial 
 python3 -m unittest discover -s tests -v
 node --check custom_components/nest_lyric_panel/frontend/nest-lyric-panel.js
 CHROME=/path/to/chromium python3 tests/browser_check.py
+CHROME=/path/to/chromium python3 tests/display_browser_check.py
 ```
 
 See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE) for licensing and attribution. Nest Lyric Panel is not affiliated with Home Assistant, Music Assistant, LRCLIB, or the model authors.
