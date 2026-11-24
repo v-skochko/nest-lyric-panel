@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Nest Lyric Panel",
-        "description": "Пошук текстів пісень та їх відображення на панелі."
+        "description": "Лірика, обкладинка й керування музикою на Nest Hub, телевізорі або панелі Home Assistant. Тексти надає LRCLIB; локальний переклад необов’язковий."
       }
     },
     "abort": {"already_configured": "Nest Lyric Panel уже налаштовано."}

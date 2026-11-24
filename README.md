@@ -1,6 +1,11 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
+  <img src="assets/logo.svg" alt="Nest Lyric Panel: a lyric-decorated egg in a leafy nest with an audio waveform" width="465">
+</picture>
+
 # Nest Lyric Panel
 
-A Home Assistant integration and dashboard card for time-synced and plain song lyrics. It uses a media player's metadata, looks up lyrics in LRCLIB, and can optionally ask a self-hosted English-to-Ukrainian translation endpoint for translations.
+A Home Assistant integration and dashboard panel for Nest Hub, TVs and other screens. It combines album artwork and playback controls with time-synced or plain song lyrics. The panel uses a media player's metadata, looks up lyrics in LRCLIB, and can optionally ask a self-hosted English-to-Ukrainian translation endpoint for translations.
 
 > Early preview: the project has not yet been validated on every Home Assistant installation or hardware. It does not include song lyrics or model weights.
 

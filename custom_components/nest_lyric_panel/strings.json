@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Nest Lyric Panel",
-        "description": "Look up song lyrics and display them on a dashboard."
+        "description": "Show lyrics, album art and playback controls on Nest Hub, TV or a Home Assistant dashboard. Lyrics are provided by LRCLIB; local translation is optional."
       }
     },
     "abort": {"already_configured": "Nest Lyric Panel is already configured."}
