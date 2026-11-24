@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><style>body{margin:0}.fixture{width:640px;height:400px}</style>
+<div id="fixtures"></div><pre id="result">waiting</pre>
+<script src="../custom_components/music_plus_lyrics/frontend/music-plus-lyrics.js"></script>
+<script>
+function make(nest,mode,unsynced){
+ let x=document.createElement('music-plus-lyrics-card');x.className='fixture';document.getElementById('fixtures').append(x);
+ x.setConfig({entity:'test',fit_synced:true,nest_style:nest,font_size:30,translation_font_size:23,card_height:'320px'});
+ x.lines=[{time:0,text:"I get doesn't want"},{time:10,text:'A much longer sentence with many more words that must wrap naturally across several lines'}];
+ x.mode=mode;x.hasTimedLyrics=true;x.unsynced=unsynced;x.modeEnglish=mode===1;x.translations={[x.lines[1].text]:'Це приклад перекладу довгого рядка'};x.draw();x.shadowRoot.querySelector('.line').classList.add('active');return x;
+}
+let n=make(true,1,false),uk=make(true,2,false),web=make(false,1,false),plain=make(true,3,true);
+function stats(c){let a=[...c.shadowRoot.querySelectorAll('.line')],x=a.map(e=>e.querySelector('.original'));let tr=a[1].querySelector('.translation');return {mode:c.mode,width:innerWidth,firstFont:parseFloat(getComputedStyle(x[0]).fontSize),secondFont:parseFloat(getComputedStyle(x[1]).fontSize),firstHeight:x[0].getBoundingClientRect().height,secondHeight:x[1].getBoundingClientRect().height,lineHeight:parseFloat(getComputedStyle(x[1]).lineHeight),whiteSpace:getComputedStyle(x[1]).whiteSpace,translationWhiteSpace:getComputedStyle(tr).whiteSpace,translationY:tr.getBoundingClientRect().top,originalBottom:x[1].getBoundingClientRect().bottom,transform:getComputedStyle(a[0]).transform,unsynced:c.unsynced};}
+setTimeout(()=>{document.getElementById('result').textContent=JSON.stringify({nest:stats(n),uk:stats(uk),web:stats(web),plain:stats(plain)})},100);
+</script>

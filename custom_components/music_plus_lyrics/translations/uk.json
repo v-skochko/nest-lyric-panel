@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Music Plus Lyrics",
+        "description": "Пошук текстів пісень та їх відображення на панелі."
+      }
+    },
+    "abort": {"already_configured": "Music Plus Lyrics уже налаштовано."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Налаштування Music Plus Lyrics",
+        "description": "Залиште адресу порожньою, щоб вимкнути переклад.",
+        "data": {
+          "translation_url": "Адреса сервера перекладу",
+          "sync_tolerance": "Допустима різниця тривалості в секундах",
+          "cache_minutes": "Тривалість кешу текстів у хвилинах"
+        }
+      }
+    },
+    "error": {"invalid_url": "Введіть адресу HTTP або HTTPS без логіна, пароля та фрагмента."}
+  }
+}

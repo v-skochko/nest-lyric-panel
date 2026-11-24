@@ -1,0 +1,16 @@
+services:
+  opus-translate:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${OPUS_BIND_ADDRESS:-127.0.0.1}:5002:5000"
+    environment:
+      HF_HOME: /model-cache
+      OMP_NUM_THREADS: 2
+      MODEL_IDLE_MS: 600000
+    volumes:
+      - opus_models:/model-cache
+    mem_limit: 2g
+    cpus: 2
+volumes:
+  opus_models:

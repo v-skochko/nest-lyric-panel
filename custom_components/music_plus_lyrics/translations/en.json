@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Music Plus Lyrics",
+        "description": "Look up song lyrics and display them on a dashboard."
+      }
+    },
+    "abort": {"already_configured": "Music Plus Lyrics is already configured."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Music Plus Lyrics options",
+        "description": "Leave the translation URL empty to disable translation.",
+        "data": {
+          "translation_url": "Translation endpoint URL",
+          "sync_tolerance": "Maximum duration difference in seconds",
+          "cache_minutes": "Lyrics cache duration in minutes"
+        }
+      }
+    },
+    "error": {"invalid_url": "Enter a valid HTTP or HTTPS URL without credentials or a fragment."}
+  }
+}
