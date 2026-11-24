@@ -9,7 +9,7 @@ chrome = os.environ["CHROME"]
 fixture = (Path(__file__).parent / "browser_test.html").resolve().as_uri()
 for width in (1024, 1124, 1125, 1400):
     html = subprocess.run(
-        [chrome, "--headless", "--disable-gpu", "--no-sandbox", f"--window-size={width},800", "--virtual-time-budget=1000", "--dump-dom", fixture],
+        [chrome, "--headless", "--disable-gpu", "--no-sandbox", "--allow-file-access-from-files", f"--window-size={width},800", "--virtual-time-budget=1000", "--dump-dom", fixture],
         check=True, capture_output=True, text=True,
     ).stdout
     match = re.search(r'<pre id="result">(.*?)</pre>', html)

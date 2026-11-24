@@ -26,7 +26,7 @@ Requires Home Assistant 2026.11 or later. The Marketplace is available in Home A
 
 1. In **Settings → Marketplace**, add `https://github.com/v-skochko/nest-lyric-panel` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
 2. Restart Home Assistant. In **Settings → Devices & services**, add **Nest Lyric Panel**. Translation is off by default.
-3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.2.1` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
+3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.3.0` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
 4. Add the card using YAML:
 
 ```yaml
@@ -83,7 +83,7 @@ The card uses the `nest-lyric-panel-card` tag and `nest_lyric_panel` domain. It 
 
 ## Options
 
-Integration options are under **Settings → Devices & services → Nest Lyric Panel → Configure**:
+Integration options are available on the Nest Lyric Panel virtual device and under **Settings → Devices & services → Nest Lyric Panel → Configure**. Changes trigger a refresh of connected lyrics cards:
 
 | Option | Default | Meaning |
 | --- | --- | --- |
@@ -91,9 +91,9 @@ Integration options are under **Settings → Devices & services → Nest Lyric P
 | Maximum duration difference | 2 seconds | Timed lyrics are treated as unsynchronized if durations differ by more than this. |
 | Lyrics cache duration | 60 minutes | Per-instance in-memory lookup cache; 0 disables effective caching. |
 
-The optional endpoint must accept a POST body like `{"q":["Hello"],"source":"en","target":"uk","format":"text"}` and return `{"translatedText":["Привіт"]}`. Only English-to-Ukrainian is supported at present. Changes to options take effect for new requests; refresh a card to re-evaluate the current track.
+The optional endpoint must accept a POST body like `{"q":["Hello"],"source":"en","target":"uk","format":"text"}` and return `{"translatedText":["Привіт"]}`. Only English-to-Ukrainian is supported at present. Settings changes notify connected cards to re-evaluate the current track.
 
-Card options:
+Both cards have a visual editor in the Home Assistant dashboard editor. The display editor supports room-to-player mappings. Each card keeps its own settings. Card options:
 
 | Option | Default | Meaning |
 | --- | --- | --- |

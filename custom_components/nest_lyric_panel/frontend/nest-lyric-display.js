@@ -1,9 +1,11 @@
-import './nest-lyric-panel.js?v=0.2.1';
+import './nest-lyric-panel.js?v=0.3.0';
 class NestLyricDisplay extends HTMLElement {
+  static getStubConfig(){return {entity:'media_player.example'};}
+  static getConfigElement(){return document.createElement('nest-lyric-editor');}
   constructor(){super();this.attachShadow({mode:'open'});this.player='';this.currentImage='';this.timer=null;this.fitFrame=0;this.fitKey='';this.fitObserver=null;this.resizePanel=()=>{const stage=this.shadowRoot.querySelector('.stage');if(!stage)return;const top=Math.max(0,this.getBoundingClientRect().top);const height=Math.max(180,Math.floor(window.innerHeight-top-4));stage.style.height=height+'px';stage.style.setProperty('--nest-available-height',height+'px');this.scheduleFit();};}
   connectedCallback(){window.addEventListener('resize',this.resizePanel);requestAnimationFrame(this.resizePanel);this.timer=setInterval(()=>this.updateProgress(),1000);if(typeof ResizeObserver!=='undefined'){this.fitObserver=new ResizeObserver(()=>this.scheduleFit());const p=this.shadowRoot.querySelector('.now-playing');if(p)this.fitObserver.observe(p);}}
   disconnectedCallback(){window.removeEventListener('resize',this.resizePanel);clearInterval(this.timer);this.timer=null;if(this.fitObserver)this.fitObserver.disconnect();if(this.fitFrame)cancelAnimationFrame(this.fitFrame);}
-  setConfig(config){if(!config.entity&&(!config.room_selector||!config.rooms))throw Error('Configure entity or room_selector and rooms');this.config=config;this.shadowRoot.innerHTML=`<style>
+  setConfig(config){this.player='';this.currentImage='';this.fitKey='';if(!config.entity&&(!config.room_selector||!config.rooms))throw Error('Configure entity or room_selector and rooms');this.config=config;this.shadowRoot.innerHTML=`<style>
     :host{display:block;height:100%;font-family:Roboto,'Arial',sans-serif;color:#191b20}
     .stage{box-sizing:border-box;display:grid;grid-template-columns:minmax(210px,34%) minmax(0,1fr);gap:6px;height:100%;min-height:0;padding:4px;background:#f7f8fa}
     .cover{display:flex;flex-direction:column;justify-content:flex-start;align-items:center;min-width:0;min-height:0;gap:4px}

@@ -110,6 +110,7 @@ async def async_setup(hass:HomeAssistant,config):
     hass.data[DOMAIN]={'cache':{},'settings':{}}
     frontend=Path(__file__).parent/'frontend'
     await hass.http.async_register_static_paths([
+        StaticPathConfig('/nest_lyric_panel/nest-lyric-editor.js',str(frontend/'nest-lyric-editor.js'),True),
         StaticPathConfig('/nest_lyric_panel/nest-lyric-panel.js',str(frontend/'nest-lyric-panel.js'),True),
         StaticPathConfig('/nest_lyric_panel/nest-lyric-display.js',str(frontend/'nest-lyric-display.js'),True),
     ])
@@ -121,13 +122,17 @@ async def async_setup(hass:HomeAssistant,config):
 async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
     hass.data[DOMAIN]['settings']=dict(entry.options)
     entry.async_on_unload(entry.add_update_listener(_options_updated))
+    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text'])
     return True
 
 async def _options_updated(hass:HomeAssistant,entry:ConfigEntry):
     hass.data[DOMAIN]['settings']=dict(entry.options)
     hass.data[DOMAIN]['cache'].clear()
+    hass.bus.async_fire('nest_lyric_panel_settings_changed')
 
 async def async_unload_entry(hass:HomeAssistant,entry:ConfigEntry):
+    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text']):
+        return False
     hass.data[DOMAIN]['settings']={}
     hass.data[DOMAIN]['cache'].clear()
     return True

@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><pre id="result">waiting</pre>
+<script type="module">
+import '../custom_components/nest_lyric_panel/frontend/nest-lyric-display.js';
+const h={language:'uk',states:{}};
+const e=document.createElement('nest-lyric-editor');document.body.append(e);e.hass=h;
+let last; e.addEventListener('config-changed',ev=>last=ev.detail.config);
+e.setConfig({type:'custom:nest-lyric-display',room_selector:'input_select.room',rooms:{Кухня:{music_assistant:'media_player.kitchen',physical:'media_player.physical',cast:'media_player.cast'}},lyrics:{sync_offset:1},unknown:'preserved'});
+const sections=[...e.shadowRoot.querySelectorAll('summary')].map(s=>s.textContent);
+const nums=[...e.shadowRoot.querySelectorAll('input[type=number]')];nums[0].value='38';nums[0].dispatchEvent(new Event('change'));
+const font=last.lyrics.font_size, preserved=last.rooms.Кухня.physical==='media_player.physical'&&last.unknown==='preserved';
+const picks=[...e.shadowRoot.querySelectorAll('fieldset ha-entity-picker')];picks[0].dispatchEvent(new CustomEvent('value-changed',{detail:{value:'media_player.changed'}}));
+const changed=last.rooms.Кухня.music_assistant;
+const name=e.shadowRoot.querySelector('input[placeholder^="Назва кімнати"]');name.value='Кімната';[...e.shadowRoot.querySelectorAll('button')].find(b=>b.textContent==='Додати кімнату').click();const added=Object.hasOwn(last.rooms,'Кімната');
+const s=document.createElement('nest-lyric-editor');document.body.append(s);s.hass=h;s.setConfig({type:'custom:nest-lyric-panel-card',entity:'media_player.x'});let web;s.addEventListener('config-changed',ev=>web=ev.detail.config);const n=s.shadowRoot.querySelector('input[type=number]');n.value='27';n.dispatchEvent(new Event('change'));
+document.getElementById('result').textContent=JSON.stringify({sections,font,preserved,changed,added,web:web.font_size,webEntity:web.entity,displayFactory:customElements.get('nest-lyric-display').getConfigElement().localName,lyricFactory:customElements.get('nest-lyric-panel-card').getConfigElement().localName});
+</script>
