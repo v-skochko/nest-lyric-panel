@@ -7,7 +7,7 @@ from pathlib import Path
 
 chrome = os.environ["CHROME"]
 fixture = (Path(__file__).parent / "display_test.html").resolve().as_uri()
-for width in (1024, 1400):
+for width in (600, 768, 1024, 1400):
     html = subprocess.run(
         [chrome, "--headless", "--disable-gpu", "--no-sandbox", "--allow-file-access-from-files", f"--window-size={width},800", "--virtual-time-budget=1500", "--dump-dom", fixture],
         check=True, capture_output=True, text=True,
@@ -23,7 +23,13 @@ for width in (1024, 1400):
     assert [(c["service"], c["data"]["entity_id"]) for c in result["calls"]] == [
         ("media_next_track", "media_player.a_ma"),
         ("volume_up", "media_player.b_speaker"),
-        ("media_seek", "media_player.b_speaker"),
     ]
-    assert result["calls"][-1]["data"]["seek_position"] == 50
-    print(f"{width}px: display, room/source selection, controls and seek verified")
+    assert result["buttonOrder"] == ["volume_down", "media_previous_track", "media_play_pause", "media_next_track", "volume_up"]
+    assert result["centerDelta"] < 1 and result["playWidth"] > result["otherWidth"]
+    assert result["playColor"] == "rgb(29, 185, 84)" and result["volumeColors"] == ["rgb(211, 227, 253)"] * 2
+    assert result["elapsed"] == "0:25" and result["duration"] == "1:40"
+    assert result["progressRole"] == "progressbar" and result["progressValue"] == "25"
+    assert result["progressFocusable"] is False and result["sliderCount"] == 0
+    assert 0 <= result["progressGap"] <= 10
+    assert result["unknownElapsed"] == "—:—" and result["unknownValue"] is None
+    print(f"{width}px: player selection, centred controls and read-only progress verified")
