@@ -1,4 +1,4 @@
-# Music Plus Lyrics
+# Nest Lyric Panel
 
 A Home Assistant integration and dashboard card for time-synced and plain song lyrics. It uses a media player's metadata, looks up lyrics in LRCLIB, and can optionally ask a self-hosted English-to-Ukrainian translation endpoint for translations.
 
@@ -19,13 +19,13 @@ The card needs a media player that exposes `media_title` and `media_artist`. Syn
 
 Requires Home Assistant 2026.11 or later. The Marketplace is available in Home Assistant 2026.11. This repository is intended to be added as a **custom integration repository**; it is not automatically part of the public catalog.
 
-1. In **Settings → Marketplace**, add `https://github.com/v-skochko/music-plus-lyrics` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
-2. Restart Home Assistant. In **Settings → Devices & services**, add **Music Plus Lyrics**. Translation is off by default.
-3. In **Settings → Dashboards → Resources**, add `/music_plus_lyrics/music-plus-lyrics.js?v=0.1.0` as a **JavaScript module**. The integration must be loaded to serve this file. Reload the browser or restart the Cast view.
+1. In **Settings → Marketplace**, add `https://github.com/v-skochko/nest-lyric-panel` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
+2. Restart Home Assistant. In **Settings → Devices & services**, add **Nest Lyric Panel**. Translation is off by default.
+3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-panel.js?v=0.1.1` as a **JavaScript module**. The integration must be loaded to serve this file. Reload the browser or restart the Cast view.
 4. Add the card using YAML:
 
 ```yaml
-type: custom:music-plus-lyrics-card
+type: custom:nest-lyric-panel-card
 entity: media_player.living_room
 language: en
 card_height: 400px
@@ -35,13 +35,13 @@ sync_offset: 0
 show_mode: true
 ```
 
-For manual installation, copy `custom_components/music_plus_lyrics` to the corresponding `custom_components` directory in your Home Assistant configuration, then follow steps 2–4. The dashboard resource is a separate step even when the integration is installed by Marketplace.
+For manual installation, copy `custom_components/nest_lyric_panel` to the corresponding `custom_components` directory in your Home Assistant configuration, then follow steps 2–4. The dashboard resource is a separate step even when the integration is installed by Marketplace.
 
-The card uses the `music-plus-lyrics-card` tag and `music_plus_lyrics` domain. It is separate from older private versions using `music-plus-lyrics` or `vasyl_lyrics`; update dashboard configurations explicitly when migrating. Back up the old configuration first.
+The card uses the `nest-lyric-panel-card` tag and `nest_lyric_panel` domain. It is separate from the earlier private version using `music-plus-lyrics` and `vasyl_lyrics`; update dashboard configurations explicitly when migrating. Back up the old configuration first.
 
 ## Options
 
-Integration options are under **Settings → Devices & services → Music Plus Lyrics → Configure**:
+Integration options are under **Settings → Devices & services → Nest Lyric Panel → Configure**:
 
 | Option | Default | Meaning |
 | --- | --- | --- |
@@ -84,14 +84,14 @@ Language detection is deliberately simple: text containing non-ASCII letters is 
 
 The integration exposes the following Home Assistant WebSocket commands; these are not Home Assistant sensor entities:
 
-- `music_plus_lyrics/lookup`: accepts `artist`, `title`, optional `album` and `duration`; returns `status`, lyrics, source and duration when available. `incomplete` means the source failed, not that lyrics were absent.
-- `music_plus_lyrics/mode`: accepts lookup status, text, timestamp presence and durations; returns one integer:
+- `nest_lyric_panel/lookup`: accepts `artist`, `title`, optional `album` and `duration`; returns `status`, lyrics, source and duration when available. `incomplete` means the source failed, not that lyrics were absent.
+- `nest_lyric_panel/mode`: accepts lookup status, text, timestamp presence and durations; returns one integer:
   - `0`: lyrics not found.
   - `1`: synchronized, English, translation configured.
   - `2`: synchronized, original only.
   - `3`: unsynchronized, English, translation configured.
   - `4`: unsynchronized, original only.
-- `music_plus_lyrics/translate`: accepts up to four `text` lines and `full_text`; returns translated lines or `skipped`. Translation failures are reported as errors.
+- `nest_lyric_panel/translate`: accepts up to four `text` lines and `full_text`; returns translated lines or `skipped`. Translation failures are reported as errors.
 
 Each client derives the mode for its own player and track. There is no single global Home Assistant helper, so two players may have different modes. Modes 1 and 3 describe translation eligibility/configuration, not a guarantee that the external translator is online.
 
@@ -105,8 +105,8 @@ The private installation's Pisni.in.ua fallback is not included in this initial 
 
 ```sh
 python3 -m unittest discover -s tests -v
-node --check custom_components/music_plus_lyrics/frontend/music-plus-lyrics.js
+node --check custom_components/nest_lyric_panel/frontend/nest-lyric-panel.js
 CHROME=/path/to/chromium python3 tests/browser_check.py
 ```
 
-See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE) for licensing and attribution. Music Plus Lyrics is not affiliated with Home Assistant, Music Assistant, LRCLIB, or the model authors.
+See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE) for licensing and attribution. Nest Lyric Panel is not affiliated with Home Assistant, Music Assistant, LRCLIB, or the model authors.

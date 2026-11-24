@@ -2,16 +2,16 @@
   "config": {
     "step": {
       "user": {
-        "title": "Music Plus Lyrics",
+        "title": "Nest Lyric Panel",
         "description": "Look up song lyrics and display them on a dashboard."
       }
     },
-    "abort": {"already_configured": "Music Plus Lyrics is already configured."}
+    "abort": {"already_configured": "Nest Lyric Panel is already configured."}
   },
   "options": {
     "step": {
       "init": {
-        "title": "Music Plus Lyrics options",
+        "title": "Nest Lyric Panel options",
         "description": "Leave the translation URL empty to disable translation.",
         "data": {
           "translation_url": "Translation endpoint URL",

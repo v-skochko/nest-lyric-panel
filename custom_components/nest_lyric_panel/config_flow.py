@@ -1,4 +1,4 @@
-"""Set up Music Plus Lyrics."""
+"""Set up Nest Lyric Panel."""
 from urllib.parse import urlsplit
 
 import voluptuous as vol
@@ -27,23 +27,23 @@ def _valid_url(url):
         return False
 
 
-class MusicPlusLyricsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class NestLyricPanelConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
         await self.async_set_unique_id(DOMAIN)
         self._abort_if_unique_id_configured()
         if user_input is not None:
-            return self.async_create_entry(title="Music Plus Lyrics", data={})
+            return self.async_create_entry(title="Nest Lyric Panel", data={})
         return self.async_show_form(step_id="user")
 
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return MusicPlusLyricsOptionsFlow()
+        return NestLyricPanelOptionsFlow()
 
 
-class MusicPlusLyricsOptionsFlow(config_entries.OptionsFlow):
+class NestLyricPanelOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         errors = {}
         if user_input is not None:

@@ -13,10 +13,12 @@ from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers import config_validation as cv
 
 _LOGGER = logging.getLogger(__name__)
-DOMAIN = 'music_plus_lyrics'
-HEADERS = {'User-Agent': 'MusicPlusLyrics/0.1 (https://github.com/v-skochko/music-plus-lyrics)', 'Accept': 'application/json,text/html'}
+DOMAIN = 'nest_lyric_panel'
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+HEADERS = {'User-Agent': 'NestLyricPanel/0.1 (https://github.com/v-skochko/nest-lyric-panel)', 'Accept': 'application/json,text/html'}
 
 def normalize(value):
     value = unicodedata.normalize('NFKC', value or '').casefold()
@@ -66,12 +68,12 @@ def lyrics_mode(status, text, has_timed, track_duration, lyrics_duration, transl
         return LyricsMode.SYNCED_TRANSLATED if synced else LyricsMode.UNSYNCED_TRANSLATED
     return LyricsMode.SYNCED_ORIGINAL if synced else LyricsMode.UNSYNCED_ORIGINAL
 
-@websocket_api.websocket_command({vol.Required('type'):'music_plus_lyrics/mode',vol.Required('status'):vol.In(['found','not_found']),vol.Optional('text',default=''):vol.All(str,vol.Length(max=50000)),vol.Optional('has_timed',default=False):bool,vol.Optional('track_duration',default=0):vol.All(vol.Coerce(float),vol.Range(min=0)),vol.Optional('lyrics_duration',default=0):vol.All(vol.Coerce(float),vol.Range(min=0))})
+@websocket_api.websocket_command({vol.Required('type'):'nest_lyric_panel/mode',vol.Required('status'):vol.In(['found','not_found']),vol.Optional('text',default=''):vol.All(str,vol.Length(max=50000)),vol.Optional('has_timed',default=False):bool,vol.Optional('track_duration',default=0):vol.All(vol.Coerce(float),vol.Range(min=0)),vol.Optional('lyrics_duration',default=0):vol.All(vol.Coerce(float),vol.Range(min=0))})
 @websocket_api.async_response
 async def mode(hass,connection,msg):
     settings=hass.data[DOMAIN]['settings']; connection.send_result(msg['id'],int(lyrics_mode(msg['status'],msg['text'],msg['has_timed'],msg['track_duration'],msg['lyrics_duration'],bool(settings.get('translation_url')),settings.get('sync_tolerance',2))))
 
-@websocket_api.websocket_command({vol.Required('type'):'music_plus_lyrics/lookup',vol.Required('artist'):vol.All(str,vol.Length(min=1,max=300)),vol.Required('title'):vol.All(str,vol.Length(min=1,max=300)),vol.Optional('album',default=''):vol.All(str,vol.Length(max=300)),vol.Optional('duration',default=0):vol.Coerce(float)})
+@websocket_api.websocket_command({vol.Required('type'):'nest_lyric_panel/lookup',vol.Required('artist'):vol.All(str,vol.Length(min=1,max=300)),vol.Required('title'):vol.All(str,vol.Length(min=1,max=300)),vol.Optional('album',default=''):vol.All(str,vol.Length(max=300)),vol.Optional('duration',default=0):vol.Coerce(float)})
 @websocket_api.async_response
 async def lookup(hass,connection,msg):
     artist,title,album=msg['artist'].strip(),msg['title'].strip(),msg['album'].strip();duration=max(0,msg['duration']);key=(artist,title,album,round(duration));cache=hass.data[DOMAIN]['cache'];entry=cache.get(key)
@@ -87,7 +89,7 @@ async def lookup(hass,connection,msg):
         cache[key]=(time.monotonic(),result)
     connection.send_result(msg['id'],result)
 
-@websocket_api.websocket_command({vol.Required('type'):'music_plus_lyrics/translate',vol.Required('text'):vol.All([str],vol.Length(min=1,max=4)),vol.Required('full_text'):vol.All(str,vol.Length(max=50000))})
+@websocket_api.websocket_command({vol.Required('type'):'nest_lyric_panel/translate',vol.Required('text'):vol.All([str],vol.Length(min=1,max=4)),vol.Required('full_text'):vol.All(str,vol.Length(max=50000))})
 @websocket_api.async_response
 async def translate(hass,connection,msg):
     if not is_english(msg['full_text']):connection.send_result(msg['id'],{'status':'skipped','translatedText':[]});return
@@ -106,7 +108,7 @@ async def translate(hass,connection,msg):
 
 async def async_setup(hass:HomeAssistant,config):
     hass.data[DOMAIN]={'cache':{},'settings':{}}
-    await hass.http.async_register_static_paths([StaticPathConfig('/music_plus_lyrics/music-plus-lyrics.js',str(Path(__file__).parent/'frontend'/'music-plus-lyrics.js'),True)])
+    await hass.http.async_register_static_paths([StaticPathConfig('/nest_lyric_panel/nest-lyric-panel.js',str(Path(__file__).parent/'frontend'/'nest-lyric-panel.js'),True)])
     websocket_api.async_register_command(hass,lookup)
     websocket_api.async_register_command(hass,translate)
     websocket_api.async_register_command(hass,mode)

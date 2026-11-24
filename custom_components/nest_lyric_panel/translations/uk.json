@@ -2,16 +2,16 @@
   "config": {
     "step": {
       "user": {
-        "title": "Music Plus Lyrics",
+        "title": "Nest Lyric Panel",
         "description": "Пошук текстів пісень та їх відображення на панелі."
       }
     },
-    "abort": {"already_configured": "Music Plus Lyrics уже налаштовано."}
+    "abort": {"already_configured": "Nest Lyric Panel уже налаштовано."}
   },
   "options": {
     "step": {
       "init": {
-        "title": "Налаштування Music Plus Lyrics",
+        "title": "Налаштування Nest Lyric Panel",
         "description": "Залиште адресу порожньою, щоб вимкнути переклад.",
         "data": {
           "translation_url": "Адреса сервера перекладу",
