@@ -57,6 +57,7 @@ h.states['media_player.b_cast'].attributes.media_title='Track Changed';h.states[
 h.states['media_player.b_cast'].state='paused';h.states['media_player.b_cast'].attributes.media_position=45;card.hass=h;results.pausedElapsed=card.shadowRoot.querySelector('.elapsed').textContent;results.pausedTimeline=card.timelinePlayer;
 h.states['media_player.b_cast']={state:'idle',attributes:{}};card.hass=h;results.backToMusic=card.timelinePlayer;
 results.calls=calls;results.width=innerWidth;results.displayWidth=card.getBoundingClientRect().width;
+const zoned=document.createElement('nest-lyric-display');document.body.append(zoned);zoned.setConfig({zone_entity:'sensor.cast_zone'});zoned.hass={...h,states:{...h.states,'sensor.cast_zone':{state:'showing',attributes:{active_player:'media_player.a_ma'}}}};results.zonePlayer=zoned.player;
 const single=document.createElement('nest-lyric-display');document.body.append(single);single.setConfig({entity:'media_player.a_ma'});single.hass=h;results.singlePlayer=single.player;
 document.querySelector('#result').textContent=JSON.stringify(results);
 </script>

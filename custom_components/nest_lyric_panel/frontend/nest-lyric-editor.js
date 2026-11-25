@@ -45,6 +45,7 @@ class NestLyricEditor extends HTMLElement {
     const source=this.section(this.t('Джерело','Source'));
     this.field(source,this.t('Плеєр','Media player'),'entity',{kind:'entity',domains:['media_player']});
     if(this.display){
+      this.field(source,this.t('Cast-зона (сенсор стану)','Cast zone (status sensor)'),'zone_entity',{kind:'entity',domains:['sensor']});
       this.field(source,this.t('Перемикач кімнати','Room selector'),'room_selector',{kind:'entity',domains:['input_select','select']});
       this.field(source,this.t('Перемикач джерела','Source selector'),'source_selector',{kind:'entity',domains:['input_select','select']});
       this.field(source,this.t('Назва джерела YouTube','YouTube source name'),'youtube_source',{placeholder:'YouTube'});

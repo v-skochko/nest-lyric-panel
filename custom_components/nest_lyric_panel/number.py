@@ -23,7 +23,7 @@ class SettingsNumber(SettingsEntity, NumberEntity):
 
     @property
     def native_value(self):
-        return self.entry.options.get(self.key, self.default)
+        return self.hass.data["nest_lyric_panel"]["settings"].get(self.key, self.default)
 
     async def async_set_native_value(self, value):
-        self.update_option(int(value) if self.key == "cache_minutes" else float(value))
+        await self.update_option(int(value) if self.key == "cache_minutes" else float(value))

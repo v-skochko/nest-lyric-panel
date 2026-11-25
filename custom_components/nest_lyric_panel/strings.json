@@ -2,12 +2,45 @@
   "config": {
     "step": {
       "user": {
-        "title": "Nest Lyric Panel",
-        "description": "Show lyrics, album art and playback controls on Nest Hub, TV or a Home Assistant dashboard. Lyrics are provided by LRCLIB; local translation is optional."
+        "title": "Cast zone",
+        "data": {
+          "name": "Name",
+          "primary_player": "Primary player",
+          "additional_players": "Additional players",
+          "display": "Cast display",
+          "dashboard_path": "Dashboard path",
+          "enabled": "Enabled"
+        }
+      },
+      "reconfigure": {
+        "title": "Edit Cast zone",
+        "data": {
+          "name": "Name",
+          "primary_player": "Primary player",
+          "additional_players": "Additional players",
+          "display": "Cast display",
+          "dashboard_path": "Dashboard path",
+          "enabled": "Enabled"
+        }
+      },
+      "view": {
+        "title": "Dashboard view",
+        "data": {
+          "view_path": "View"
+        }
       }
     },
     "abort": {
-      "already_configured": "Nest Lyric Panel is already configured."
+      "already_configured": "Nest Lyric Panel is already configured.",
+      "no_views": "The dashboard has no available views with paths."
+    },
+    "initiate_flow": {
+      "user": "Add Cast zone"
+    },
+    "error": {
+      "source_is_display": "Display and source must be different entities.",
+      "display_in_use": "This display is already used by another zone.",
+      "invalid_view": "Choose an available view."
     }
   },
   "options": {

@@ -1,5 +1,6 @@
 """Shared configuration entities for the integration's virtual device."""
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.core import callback
 from homeassistant.const import EntityCategory
 from . import DOMAIN
 
@@ -20,12 +21,15 @@ class SettingsEntity:
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()
-        self.async_on_remove(self.entry.add_update_listener(self._options_changed))
+        self.async_on_remove(self.hass.bus.async_listen("nest_lyric_panel_settings_changed", self._settings_changed))
 
-    async def _options_changed(self, hass, entry):
+    @callback
+    def _settings_changed(self, event):
         self.async_write_ha_state()
 
-    def update_option(self, value):
-        options = dict(self.entry.options)
-        options[self.key] = value
-        self.hass.config_entries.async_update_entry(self.entry, options=options)
+    async def update_option(self, value):
+        shared = self.hass.data[DOMAIN]
+        shared['settings'][self.key] = value
+        shared['cache'].clear()
+        await shared['settings_store'].async_save(shared['settings'])
+        self.hass.bus.async_fire('nest_lyric_panel_settings_changed')

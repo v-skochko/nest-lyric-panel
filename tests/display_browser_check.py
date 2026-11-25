@@ -22,7 +22,7 @@ for width in (600, 768, 1024, 1400):
     assert result["youtubeTimeline"] == result["youtubeLyricEntity"] == "media_player.b_cast"
     assert result["youtubeElapsed"] == "0:40" and result["pausedElapsed"] == "0:45"
     assert result["pausedTimeline"] == "media_player.b_cast" and result["backToMusic"] == "media_player.b_ma"
-    assert result["singlePlayer"] == "media_player.a_ma"
+    assert result["singlePlayer"] == "media_player.a_ma" and result["zonePlayer"] == "media_player.a_ma"
     assert [(c["service"], c["data"]["entity_id"]) for c in result["calls"]] == [
         ("media_next_track", "media_player.a_ma"),
         ("volume_up", "media_player.b_speaker"),

@@ -19,10 +19,10 @@ class TranslationEndpoint(SettingsEntity, TextEntity):
 
     @property
     def native_value(self):
-        return self.entry.options.get(self.key, "")
+        return self.hass.data["nest_lyric_panel"]["settings"].get(self.key, "")
 
     async def async_set_value(self, value):
         value = value.strip()
         if not _valid_url(value):
             raise HomeAssistantError("Invalid translation URL")
-        self.update_option(value)
+        await self.update_option(value)

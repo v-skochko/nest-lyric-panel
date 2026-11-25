@@ -2,12 +2,45 @@
   "config": {
     "step": {
       "user": {
-        "title": "Nest Lyric Panel",
-        "description": "Лірика, обкладинка й керування музикою на Nest Hub, телевізорі або панелі Home Assistant. Тексти надає LRCLIB; локальний переклад необов’язковий."
+        "title": "Cast-зона",
+        "data": {
+          "name": "Назва",
+          "primary_player": "Основний плеєр",
+          "additional_players": "Додаткові плеєри",
+          "display": "Cast-екран",
+          "dashboard_path": "Шлях дашборда",
+          "enabled": "Увімкнено"
+        }
+      },
+      "reconfigure": {
+        "title": "Редагувати Cast-зону",
+        "data": {
+          "name": "Назва",
+          "primary_player": "Основний плеєр",
+          "additional_players": "Додаткові плеєри",
+          "display": "Cast-екран",
+          "dashboard_path": "Шлях дашборда",
+          "enabled": "Увімкнено"
+        }
+      },
+      "view": {
+        "title": "Сторінка дашборда",
+        "data": {
+          "view_path": "Сторінка"
+        }
       }
     },
     "abort": {
-      "already_configured": "Nest Lyric Panel уже налаштовано."
+      "already_configured": "Nest Lyric Panel уже налаштовано.",
+      "no_views": "Дашборд не має доступних сторінок із шляхами."
+    },
+    "initiate_flow": {
+      "user": "Додати Cast-зону"
+    },
+    "error": {
+      "source_is_display": "Екран і джерело мають бути різними сутностями.",
+      "display_in_use": "Цей екран уже використовується іншою зоною.",
+      "invalid_view": "Оберіть доступну сторінку."
     }
   },
   "options": {

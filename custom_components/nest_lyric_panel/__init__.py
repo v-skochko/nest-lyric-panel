@@ -14,6 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.storage import Store
 
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'nest_lyric_panel'
@@ -107,7 +108,9 @@ async def translate(hass,connection,msg):
         _LOGGER.warning('Translation unavailable: %s',type(exc).__name__);connection.send_error(msg['id'],'translation_failed','Translation unavailable')
 
 async def async_setup(hass:HomeAssistant,config):
-    hass.data[DOMAIN]={'cache':{},'settings':{}}
+    store = Store(hass, 1, 'nest_lyric_panel.shared_settings')
+    saved = await store.async_load()
+    hass.data[DOMAIN]={'cache':{},'settings':saved or {}, 'settings_store':store, 'settings_initialized': saved is not None}
     frontend=Path(__file__).parent/'frontend'
     await hass.http.async_register_static_paths([
         StaticPathConfig('/nest_lyric_panel/nest-lyric-editor.js',str(frontend/'nest-lyric-editor.js'),True),
@@ -120,19 +123,38 @@ async def async_setup(hass:HomeAssistant,config):
     return True
 
 async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
-    hass.data[DOMAIN]['settings']=dict(entry.options)
-    entry.async_on_unload(entry.add_update_listener(_options_updated))
-    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text'])
+    from .cast_manager import CastZone
+    data = hass.data[DOMAIN]
+    data.setdefault('zones', {})
+    # Preserve existing settings exactly once, then keep them independent of zones.
+    if not data['settings_initialized']:
+        legacy = next((item for item in hass.config_entries.async_entries(DOMAIN) if item.unique_id == DOMAIN), entry)
+        data['settings'] = dict(legacy.options)
+        data['settings_initialized'] = True
+        await data['settings_store'].async_save(data['settings'])
+    if entry.unique_id == DOMAIN:
+        await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text'])
+    if entry.data.get('display'):
+        zone = CastZone(hass, dict(entry.data))
+        data['zones'][entry.entry_id] = zone
+        zone.start()
+        await hass.config_entries.async_forward_entry_setups(entry, ['sensor'])
     return True
 
 async def _options_updated(hass:HomeAssistant,entry:ConfigEntry):
     hass.data[DOMAIN]['settings']=dict(entry.options)
+    await hass.data[DOMAIN]['settings_store'].async_save(hass.data[DOMAIN]['settings'])
     hass.data[DOMAIN]['cache'].clear()
     hass.bus.async_fire('nest_lyric_panel_settings_changed')
 
 async def async_unload_entry(hass:HomeAssistant,entry:ConfigEntry):
-    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text']):
+    if entry.unique_id == DOMAIN:
+        if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text']):
+            return False
+        # Settings remain available to other running zones.
+    if entry.data.get('display') and not await hass.config_entries.async_unload_platforms(entry, ['sensor']):
         return False
-    hass.data[DOMAIN]['settings']={}
-    hass.data[DOMAIN]['cache'].clear()
+    zone = hass.data[DOMAIN].get('zones', {}).pop(entry.entry_id, None)
+    if zone:
+        zone.stop()
     return True

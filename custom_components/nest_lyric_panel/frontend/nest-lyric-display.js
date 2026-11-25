@@ -1,4 +1,4 @@
-import './nest-lyric-panel.js?v=0.4.0';
+import './nest-lyric-panel.js?v=0.5.0';
 const DisplayMode=Object.freeze({AUTO:'auto',COLUMN:'column',COMPACT:'compact',WIDE:'wide'});
 const resolveDisplayMode=(mode,width)=>mode!==DisplayMode.AUTO?mode:width<600?DisplayMode.COLUMN:width<=1124?DisplayMode.COMPACT:DisplayMode.WIDE;
 class NestLyricDisplay extends HTMLElement {
@@ -7,7 +7,7 @@ class NestLyricDisplay extends HTMLElement {
   constructor(){super();this.attachShadow({mode:'open'});this.player='';this.timelinePlayer='';this.currentImage='';this.timer=null;this.fitFrame=0;this.fitKey='';this.fitObserver=null;this.resizePanel=()=>{this.updateLayout();const stage=this.shadowRoot.querySelector('.stage');if(!stage)return;if(this.layoutMode===DisplayMode.COLUMN){stage.style.height=this.cardHeight();return;}const top=Math.max(0,this.getBoundingClientRect().top);const height=Math.max(180,Math.floor(window.innerHeight-top-4));stage.style.height=height+'px';stage.style.setProperty('--nest-available-height',height+'px');this.scheduleFit();};}
   connectedCallback(){if(typeof ResizeObserver!=='undefined'){this.layoutObserver=new ResizeObserver(()=>this.resizePanel());this.layoutObserver.observe(this);}window.addEventListener('resize',this.resizePanel);requestAnimationFrame(this.resizePanel);this.timer=setInterval(()=>this.updateProgress(),1000);if(typeof ResizeObserver!=='undefined'){this.fitObserver=new ResizeObserver(()=>this.scheduleFit());const p=this.shadowRoot.querySelector('.now-playing');if(p)this.fitObserver.observe(p);}}
   disconnectedCallback(){this.layoutObserver?.disconnect();this.layoutObserver=null;window.removeEventListener('resize',this.resizePanel);clearInterval(this.timer);this.timer=null;if(this.fitObserver)this.fitObserver.disconnect();if(this.fitFrame)cancelAnimationFrame(this.fitFrame);}
-  setConfig(config){this.player='';this.timelinePlayer='';this.currentImage='';this.fitKey='';if(!config.entity&&(!config.room_selector||!config.rooms))throw Error('Configure entity or room_selector and rooms');this.config=config;this.layoutMode=null;this.shadowRoot.innerHTML=`<style>
+  setConfig(config){this.player='';this.timelinePlayer='';this.currentImage='';this.fitKey='';if(!config.entity&&!config.zone_entity&&(!config.room_selector||!config.rooms))throw Error('Configure entity or room_selector and rooms');this.config=config;this.layoutMode=null;this.shadowRoot.innerHTML=`<style>
     :host{display:block;height:100%;font-family:Roboto,'Arial',sans-serif;color:#191b20}
     .stage{box-sizing:border-box;display:grid;grid-template-columns:minmax(210px,34%) minmax(0,1fr);gap:6px;height:100%;min-height:0;padding:4px;background:#f7f8fa}
     .cover{display:flex;flex-direction:column;justify-content:flex-start;align-items:center;min-width:0;min-height:0;gap:4px}
@@ -27,6 +27,7 @@ class NestLyricDisplay extends HTMLElement {
     const img=this.shadowRoot.querySelector('.art');const fallback=h.states[player]?.attributes||{};const sameTrack=a.media_title&&a.media_artist&&a.media_title===fallback.media_title&&a.media_artist===fallback.media_artist;const image=a.entity_picture_local||a.entity_picture||(sameTrack&&(fallback.entity_picture_local||fallback.entity_picture))||'';if(image!==this.currentImage){this.currentImage=image;if(image)img.src=image.startsWith('/')&&typeof h.hassUrl==='function'?h.hassUrl(image):image;else img.removeAttribute('src');}img.style.visibility=image?'visible':'hidden';
   }
   resolvePlayer(h){
+    if(this.config.zone_entity)return h.states[this.config.zone_entity]?.attributes?.active_player||'';
     if(this.config.entity)return this.config.entity;
     const selected=h.states[this.config.room_selector]?.state;
     const room=this.config.rooms?.[selected];if(!room)return '';
@@ -41,7 +42,7 @@ class NestLyricDisplay extends HTMLElement {
     return (youtubeActive||(youtubeSelected&&!app&&physicalActive))?physical:primary;
   }
   resolveTimelinePlayer(h,player){
-    if(this.config.entity)return player;
+    if(this.config.zone_entity||this.config.entity)return player;
     const room=this.config.rooms?.[h.states[this.config.room_selector]?.state];
     const cast=room?.cast||room?.physical||room?.music_assistant||room?.entity;
     const state=h.states[cast];const app=String(state?.attributes?.app_name||'').toLowerCase();

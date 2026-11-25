@@ -26,7 +26,7 @@ Requires Home Assistant 2026.11 or later. The Marketplace is available in Home A
 
 1. In **Settings → Marketplace**, add `https://github.com/v-skochko/nest-lyric-panel` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
 2. Restart Home Assistant. In **Settings → Devices & services**, add **Nest Lyric Panel**. Translation is off by default.
-3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.4.0` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
+3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.5.0` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
 4. Add the card using YAML:
 
 ```yaml
@@ -153,3 +153,7 @@ CHROME=/path/to/chromium python3 tests/display_browser_check.py
 ```
 
 See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE) for licensing and attribution. Nest Lyric Panel is not affiliated with Home Assistant, Music Assistant, LRCLIB, or the model authors.
+
+## Cast zones
+
+Create an integration entry for each Cast screen and select a primary player, optional additional players, a Cast display, and an existing dashboard and view. The entry tracks the most recently started playing source, retries Cast at most every 30 seconds, and stops its own view after 2 minutes without playback. Use the zone's Cast status sensor in the display card's `zone_entity` setting to follow its active player. Each screen should use a view configured for its zone. Shared lyric options apply across entries. Existing separate automations must be disabled only after the new zone is verified.
