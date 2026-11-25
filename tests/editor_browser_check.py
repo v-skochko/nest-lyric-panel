@@ -10,7 +10,7 @@ match = re.search(r'<pre id="result">(.*?)</pre>', html)
 assert match and match.group(1) != 'waiting', 'Editor did not initialize'
 r = json.loads(match.group(1))
 assert r['sections'] == ['Джерело', 'Лірика та синхронізація', 'Вигляд']
-assert r['font'] == 38 and r['preserved'] and r['changed'] == 'media_player.changed' and r['added']
-assert r['web'] == 27 and r['webEntity'] == 'media_player.x'
+assert r['font'] == 3 and r['preserved'] and r['changed'] == 'media_player.changed' and r['added']
+assert r['web'] == 2 and r['webEntity'] == 'media_player.x'
 assert r['displayFactory'] == r['lyricFactory'] == 'nest-lyric-editor'
 print('Visual editors: configurations, room mapping and preservation verified')

@@ -2,13 +2,13 @@
 <div id="fixtures"></div><pre id="result">waiting</pre>
 <script type="module">
 import "../custom_components/nest_lyric_panel/frontend/nest-lyric-panel.js";
-function make(nest,mode,unsynced){
+function make(layout,mode,unsynced){
  let x=document.createElement('nest-lyric-panel-card');x.className='fixture';document.getElementById('fixtures').append(x);
- x.setConfig({entity:'test',fit_synced:true,nest_style:nest,font_size:30,translation_font_size:23,card_height:'320px'});
+ x.setConfig({entity:'test',display_mode:layout,card_height:'320px'});
  x.lines=[{time:0,text:"I get doesn't want"},{time:10,text:'A much longer sentence with many more words that must wrap naturally across several lines'}];
  x.mode=mode;x.hasTimedLyrics=true;x.unsynced=unsynced;x.modeEnglish=mode===1;x.translations={[x.lines[1].text]:'Це приклад перекладу довгого рядка'};x.draw();x.shadowRoot.querySelector('.line').classList.add('active');return x;
 }
-let n=make(true,1,false),uk=make(true,2,false),web=make(false,1,false),plain=make(true,3,true);
+let n=make('compact',1,false),uk=make('compact',2,false),web=make('column',1,false),wide=make('wide',1,false),plain=make('column',3,true);
 function stats(c){let a=[...c.shadowRoot.querySelectorAll('.line')],x=a.map(e=>e.querySelector('.original'));let tr=a[1].querySelector('.translation');return {mode:c.mode,width:innerWidth,firstFont:parseFloat(getComputedStyle(x[0]).fontSize),secondFont:parseFloat(getComputedStyle(x[1]).fontSize),firstHeight:x[0].getBoundingClientRect().height,secondHeight:x[1].getBoundingClientRect().height,lineHeight:parseFloat(getComputedStyle(x[1]).lineHeight),whiteSpace:getComputedStyle(x[1]).whiteSpace,translationWhiteSpace:getComputedStyle(tr).whiteSpace,translationY:tr.getBoundingClientRect().top,originalBottom:x[1].getBoundingClientRect().bottom,transform:getComputedStyle(a[0]).transform,unsynced:c.unsynced};}
-setTimeout(()=>{document.getElementById('result').textContent=JSON.stringify({nest:stats(n),uk:stats(uk),web:stats(web),plain:stats(plain)})},100);
+setTimeout(()=>{document.getElementById('result').textContent=JSON.stringify({nest:stats(n),uk:stats(uk),web:stats(web),wide:stats(wide),plain:stats(plain)})},100);
 </script>

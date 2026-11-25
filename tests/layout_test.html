@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><pre id="result">waiting</pre>
+<script type="module">
+import '../custom_components/nest_lyric_panel/frontend/nest-lyric-display.js';
+const host=document.createElement('div');host.style.width='400px';document.body.append(host);
+const c=document.createElement('nest-lyric-display');host.append(c);c.setConfig({entity:'media_player.x'});
+c.hass={states:{'media_player.x':{state:'paused',attributes:{}}},callService:()=>Promise.resolve()};
+const tick=()=>new Promise(r=>setTimeout(()=>{c.resizePanel();r()},80));
+const state=()=>({mode:c.layoutMode,cover:getComputedStyle(c.shadowRoot.querySelector('.cover')).display,child:c.lyric?.config.display_mode,height:c.shadowRoot.querySelector('.stage').getBoundingClientRect().height});
+await tick();let column=state();host.style.width='800px';await tick();let compact=state();host.style.width='1200px';await tick();let wide=state();
+c.setConfig({entity:'media_player.x',display_mode:'compact'});c.hass={states:{'media_player.x':{state:'paused',attributes:{}}},callService:()=>Promise.resolve()};host.style.width='350px';await tick();let forced=state();
+const e=document.createElement('nest-lyric-editor');document.body.append(e);e.hass={language:'uk'};e.setConfig({type:'custom:nest-lyric-display',entity:'media_player.x'});const selects=[...e.shadowRoot.querySelectorAll('select')];const layout=selects.find(x=>[...x.options].some(o=>o.value==='column'));let emitted;e.addEventListener('config-changed',x=>emitted=x.detail.config);layout.value='wide';layout.dispatchEvent(new Event('change'));
+document.getElementById('result').textContent=JSON.stringify({column,compact,wide,forced,choices:[...layout.options].map(o=>o.value),emitted:emitted.display_mode,labels:e.shadowRoot.textContent});
+</script>

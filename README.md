@@ -26,18 +26,18 @@ Requires Home Assistant 2026.11 or later. The Marketplace is available in Home A
 
 1. In **Settings → Marketplace**, add `https://github.com/v-skochko/nest-lyric-panel` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
 2. Restart Home Assistant. In **Settings → Devices & services**, add **Nest Lyric Panel**. Translation is off by default.
-3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.3.1` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
+3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.4.0` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
 4. Add the card using YAML:
 
 ```yaml
-type: custom:nest-lyric-panel-card
+type: custom:nest-lyric-display
 entity: media_player.living_room
-language: en
+display_mode: column
 card_height: 400px
-font_size: 30
-translation_font_size: 18
-sync_offset: 0
-show_mode: true
+lyrics:
+  language: en
+  sync_offset: 0
+  show_mode: true
 ```
 
 When upgrading from 0.1.x, replace the earlier `/nest_lyric_panel/nest-lyric-panel.js?v=0.1.1` resource with the display resource above rather than registering both versions. The display resource imports the lyrics card itself.
@@ -93,21 +93,21 @@ Integration options are available on the Nest Lyric Panel virtual device and und
 
 The optional endpoint must accept a POST body like `{"q":["Hello"],"source":"en","target":"uk","format":"text"}` and return `{"translatedText":["Привіт"]}`. Only English-to-Ukrainian is supported at present. Settings changes notify connected cards to re-evaluate the current track.
 
-Both cards have a visual editor in the Home Assistant dashboard editor. The display editor supports room-to-player mappings. Each card keeps its own settings. Card options:
+The universal display card has a visual editor and supports room-to-player mappings. Its nested lyrics component is also available as a legacy standalone card. Each instance keeps its own settings. Card options:
 
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `entity` | required | Media player entity ID. |
 | `language` | HA interface language | `en` or `uk`; other languages fall back to English. |
 | `card_height` | `320px` | Positive height in `px`, `%`, or `vh`. |
-| `font_size` | 22 | Original text size in pixels, 12–48. |
-| `translation_font_size` | 12 | Translation size in pixels, 10–40. |
+| `display_mode` | `auto` | `auto`, `column`, `compact`, or `wide`; set on the display card. |
 | `sync_offset` | 0 | Seconds to advance the highlighting; a negative value delays it. |
 | `show_mode` | true | Show the mode indicator. |
-| `fit_synced` | false | Fit synchronized original lines to available width. |
-| `nest_style` | false | Use the compact white-panel style; with `fit_synced`, viewports up to 1124 CSS px wrap long originals. |
 
-On compact displays translations remain on one line and long translations can be scrolled horizontally. Longer plain lyrics use two columns with manual vertical scrolling.
+
+In `auto`, a ResizeObserver tracks the card container rather than the viewport: widths below 600 CSS px use `column`, 600–1124 use `compact`, and wider containers use `wide`. Manual selection overrides these thresholds. `column` hides the artwork, player information and controls; the other layouts show them. The resolved layout controls typography, wrapping and spacing. In column layout unsynchronized lyrics use one column; full display layouts use two. These initial thresholds should be checked on actual displays.
+
+`sync_offset`, `language`, and `show_mode` belong under `lyrics` on the universal display card. `card_height` controls column height and defaults to `320px`. Previous `nest_style`, `fit_synced`, `font_size`, and `translation_font_size` settings are no longer used; remove them when migrating. The content-state indicator (synced, translated, etc.) is distinct from the display layout.
 
 ## Optional local translation
 

@@ -19,11 +19,11 @@ class NestLyricEditor extends HTMLElement {
       el=document.createElement('ha-entity-picker'); el.hass=this._hass; el.includeDomains=domains; el.value=values[key]||''; el.allowCustomEntity=false;
       el.addEventListener('value-changed',e=>{ if (e.detail.value!==(values[key]||'')) this.put(key,e.detail.value,inner); });
     } else if(kind==='select') {
-      el=document.createElement('select'); for(const [val,text] of choices){const o=document.createElement('option');o.value=val;o.textContent=text;el.append(o)} el.value=values[key]??'';
+      el=document.createElement('select'); for(const [val,text] of choices){const o=document.createElement('option');o.value=val;o.textContent=text;el.append(o)} el.value=values[key]??defaultValue??'';
       el.addEventListener('change',()=>this.put(key,el.value,inner));
     } else {
       el=document.createElement('input');el.type=kind; if(min!==undefined)el.min=min;if(max!==undefined)el.max=max;if(step!==undefined)el.step=step;if(placeholder)el.placeholder=placeholder;
-      if(kind==='checkbox')el.checked=values[key]??defaultValue??false;else el.value=values[key]??'';
+      if(kind==='checkbox')el.checked=values[key]??defaultValue??false;else el.value=values[key]??defaultValue??'';
       el.addEventListener('change',()=>{if(kind==='checkbox')this.put(key,el.checked,inner);else if(kind==='number'&&el.value!==''){if(!el.checkValidity())return;this.put(key,Number(el.value),inner);}else this.put(key,el.value,inner)});
     }
     wrap.append(el);parent.append(wrap);
@@ -52,15 +52,12 @@ class NestLyricEditor extends HTMLElement {
       this.roomEditor(source);
     }
     const inner=this.display, lyr=this.section(this.t('Лірика та синхронізація','Lyrics and synchronization'));
-    this.field(lyr,this.t('Розмір тексту, px','Text size, px'),'font_size',{inner,kind:'number',min:12,max:48,step:1});
-    this.field(lyr,this.t('Розмір перекладу, px','Translation size, px'),'translation_font_size',{inner,kind:'number',min:10,max:40,step:1});
     this.field(lyr,this.t('Зміщення синхронізації, с','Synchronization offset, s'),'sync_offset',{inner,kind:'number',step:0.1});
     this.field(lyr,this.t('Показувати режим','Show mode'),'show_mode',{inner,kind:'checkbox',defaultValue:true});
-    this.field(lyr,this.t('Підганяти текст до ширини','Fit text to width'),'fit_synced',{inner,kind:'checkbox',defaultValue:this.display});
     const styleGroup=this.section(this.t('Вигляд','Appearance'));
+    if(this.display)this.field(styleGroup,this.t('Режим розміщення','Display layout'),'display_mode',{kind:'select',choices:[['auto',this.t('Авто','Auto')],['column',this.t('Колонка','Column')],['compact',this.t('Компактний','Compact')],['wide',this.t('Широкий','Wide')]] ,defaultValue:'auto'});
     this.field(styleGroup,this.t('Мова інтерфейсу','Interface language'),'language',{inner,kind:'select',choices:[['',this.t('Як у Home Assistant','Home Assistant default')],['uk','Українська'],['en','English']]});
-    this.field(styleGroup,this.t('Стиль Nest','Nest style'),'nest_style',{inner,kind:'checkbox',defaultValue:this.display});
-    if(!this.display)this.field(styleGroup,this.t('Висота картки','Card height'),'card_height',{placeholder:'320px'});
+    this.field(styleGroup,this.t('Висота в режимі колонки','Column height'),'card_height',{placeholder:'320px'});
   }
 }
 customElements.define('nest-lyric-editor',NestLyricEditor);

@@ -16,15 +16,10 @@ for width in (1024, 1124, 1125, 1400):
     assert match, "Fixture did not produce results"
     data = json.loads(match.group(1))
     assert data["nest"]["width"] == width
-    for key in ("nest", "uk"):
+    for key, expected in (("nest", 30), ("uk", 30), ("web", 22), ("wide", 38)):
         item = data[key]
-        if width <= 1124:
-            assert abs(item["firstFont"] - item["secondFont"]) < 0.1
-            assert item["whiteSpace"] == "normal" and item["secondHeight"] > item["lineHeight"] * 2
-            assert item["transform"] == "none"
-            assert item["translationWhiteSpace"] == "nowrap"
-            assert item["translationY"] >= item["originalBottom"]
-        else:
-            assert item["whiteSpace"] == "nowrap" and item["firstFont"] > item["secondFont"] * 2
-    assert data["web"]["whiteSpace"] == "nowrap" and data["plain"]["unsynced"]
+        assert item["firstFont"] == item["secondFont"] == expected
+        assert item["whiteSpace"] == "normal" and item["transform"] == "none"
+        assert item["translationY"] >= item["originalBottom"]
+    assert data["plain"]["unsynced"]
     print(f"{width}px: verified")
