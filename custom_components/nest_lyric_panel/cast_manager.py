@@ -96,7 +96,7 @@ class CastZone:
                 # Recheck immediately before stopping: never stop another app.
                 if self.owned(self.hass.states.get(self.display)):
                     try:
-                        await self.hass.services.async_call('media_player', 'media_stop', {'entity_id': self.display}, blocking=True)
+                        await self.hass.services.async_call('media_player', 'turn_off', {'entity_id': self.display}, blocking=True)
                     except Exception:
                         self.status = 'error'
                         _LOGGER.exception('Could not stop Cast zone %s', self.config['name'])

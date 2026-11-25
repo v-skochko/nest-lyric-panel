@@ -59,6 +59,6 @@ class CastTest(unittest.IsolatedAsyncioTestCase):
         self.z.policy.update_source('music', True, 1); self.z.policy.update_source('music', False, 2)
         self.z.policy.stopped_at = manager.time.monotonic() - 121
         await self.z.evaluate()
-        self.assertEqual(self.h.services.calls[0][1], 'media_stop')
+        self.assertEqual(self.h.services.calls[0][1], 'turn_off')
 
 if __name__ == '__main__': unittest.main()
