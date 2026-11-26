@@ -63,7 +63,7 @@ class CastZoneFlow(config_entries.ConfigSubentryFlow):
         return await self._zone_step("user", user_input)
 
     async def _zone_step(self, step, user_input):
-        entry = self._get_reconfigure_subentry() if step == "reconfigure" else None
+        suggested = dict(user_input or {})
         dashboards = self._dashboards()
         choices = [selector.SelectOptionDict(value=path, label=(item.config or {}).get("title", path)) for path, item in dashboards.items()]
         schema = _zone_schema(choices)
@@ -78,13 +78,11 @@ class CastZoneFlow(config_entries.ConfigSubentryFlow):
                 errors["display"] = "source_is_display"
             elif len(set([user_input["primary_player"], *user_input["additional_players"]])) != 1 + len(user_input["additional_players"]):
                 errors["base"] = "duplicate_player"
-            elif any((not entry or other.subentry_id != entry.subentry_id) and other.data.get("display") == user_input["display"] for other in zones(self._get_entry())):
+            elif any(other.data.get("display") == user_input["display"] for other in zones(self._get_entry())):
                 errors["display"] = "display_in_use"
             else:
                 self._zone_values = user_input
-                self._zone_entry = entry
                 return await self.async_step_view()
-        suggested = user_input or (dict(entry.data) if entry else {})
         return self.async_show_form(step_id=step, data_schema=self.add_suggested_values_to_schema(schema, suggested), errors=errors)
 
     async def async_step_view(self, user_input=None):
@@ -101,10 +99,8 @@ class CastZoneFlow(config_entries.ConfigSubentryFlow):
             if path not in views:
                 return self.async_show_form(step_id="view", data_schema=_view_schema(views), errors={"base": "invalid_view"})
             values = {**self._zone_values, "view_path": path, "view_title": views[path]}
-            if self._zone_entry:
-                return self.async_update_and_abort(self._get_entry(), self._zone_entry, data_updates=values, title=values["name"], unique_id=values["display"])
             return self.async_create_entry(title=values["name"], data=values, unique_id=values["display"])
-        return self.async_show_form(step_id="view", data_schema=self.add_suggested_values_to_schema(_view_schema(views), self._zone_entry.data if self._zone_entry else {}))
+        return self.async_show_form(step_id="view", data_schema=_view_schema(views))
 
 
 
