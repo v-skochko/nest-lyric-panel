@@ -83,7 +83,7 @@ The card uses the `nest-lyric-panel-card` tag and `nest_lyric_panel` domain. It 
 
 ## Options
 
-Integration options are available on the Nest Lyric Panel virtual device and under **Settings → Devices & services → Nest Lyric Panel → Configure**. Changes trigger a refresh of connected lyrics cards:
+Shared lyric options are available under **Settings → Devices & services → Nest Lyric Panel → Configure**. Changes trigger a refresh of connected lyrics cards:
 
 | Option | Default | Meaning |
 | --- | --- | --- |
@@ -156,7 +156,7 @@ See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE) for licensing and attribution.
 
 ## Cast zones
 
-One Nest Lyric Panel integration entry owns the shared lyric settings and all Cast zones. Add zones from the integration page. Each zone appears directly as a device with a Cast status sensor and configuration controls. Choose the primary player, Cast display, dashboard and view on the device page. Additional players appear as numbered selectors; choose a player in the empty selector to add it, or choose the dash to remove one. The dashboard selector chooses its first available view; choose a different view with the view control. Delete a zone using the device's remove action.
+One Nest Lyric Panel integration entry owns the shared lyric settings and all Cast zones. Add zones from the integration page. Each zone appears directly as a device with a Cast status sensor and configuration controls. Choose the primary player, Cast display, dashboard and view on the device page. Two fixed additional player selectors can each be set to a player or left empty. The dashboard selector chooses its first available view; choose a different view with the view control. Delete a zone using the device's remove action.
 
 For existing installations, legacy zone entries and subentries are moved to the shared entry on startup. Zone sensor entity IDs and device IDs are preserved so existing cards continue to work. The three legacy settings entities retain their IDs without a separate device. Zones run automatically; the old zone enable switches are removed.
 

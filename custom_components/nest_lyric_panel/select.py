@@ -25,7 +25,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             views[key] = {v['path']: v.get('title') or v['path'] for v in config.get('views', []) if v.get('path')}
     for sub in zones(entry):
         keys = ['primary_player', 'display', 'dashboard_path', 'view_path']
-        keys.extend(f'additional_player_{n}' for n in range(1, len(sub.data.get('additional_players', [])) + 2))
+        keys.extend(('additional_player_1', 'additional_player_2'))
         async_add_entities([ZoneSelect(entry, sub, key, views) for key in keys])
 
 
@@ -67,7 +67,9 @@ class ZoneSelect(SelectEntity):
         if current and current != '—':
             players.add(current)
         if self.slot is not None:
-            others = [v for i, v in enumerate(data.get('additional_players', [])) if i != self.slot]
+            slots = data.get('additional_player_slots', data.get('additional_players', [])[:2])
+            others = [v for i, v in enumerate(slots) if i != self.slot and v]
+            others += data.get('additional_player_overflow', data.get('additional_players', [])[2:])
             players -= set([data.get('display'), data.get('primary_player'), *others])
             return ['—', *sorted(players)]
         return sorted(players)
@@ -75,22 +77,21 @@ class ZoneSelect(SelectEntity):
     @property
     def current_option(self):
         if self.slot is not None:
-            players = self.sub.data.get('additional_players', [])
-            return players[self.slot] if self.slot < len(players) else '—'
+            players = self.sub.data.get('additional_player_slots', self.sub.data.get('additional_players', [])[:2])
+            return (players[self.slot] or '—') if self.slot < len(players) else '—'
         return self.sub.data.get(self.key)
 
     async def async_select_option(self, option):
         data = dict(self.sub.data)
         if self.slot is not None:
-            players = list(data.get('additional_players', []))
-            if self.slot < len(players):
-                if option == '—':
-                    players.pop(self.slot)
-                else:
-                    players[self.slot] = option
-            elif option != '—':
-                players.append(option)
-            data['additional_players'] = players
+            old_players = data.get('additional_players', [])
+            overflow = data.get('additional_player_overflow', old_players[2:])
+            players = list(data.get('additional_player_slots', old_players[:2]))
+            players = (players + [None, None])[:2]
+            players[self.slot] = None if option == '—' else option
+            data['additional_player_slots'] = players
+            data['additional_player_overflow'] = overflow
+            data['additional_players'] = [p for p in players if p] + overflow
         elif self.key == 'dashboard_path':
             available = self.views.get(option, {})
             if not available:

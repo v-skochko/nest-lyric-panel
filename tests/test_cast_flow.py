@@ -47,6 +47,18 @@ class FlowTests(unittest.IsolatedAsyncioTestCase):
         step=await self.f.async_step_user(data);self.assertEqual(step['step_id'],'view')
         result=await self.f.async_step_view({'view_path':'nest-hub'})
         self.assertEqual(result['data']['view_title'],'Nest Hub');self.assertEqual(result['title'],'Kitchen')
+    async def test_fixed_slots_keep_second_when_first_is_empty(self):
+        data={'name':'TV','primary_player':'media_player.a','additional_player_2':'media_player.b','display':'media_player.screen','dashboard_path':'lovelace'}
+        await self.f.async_step_user(data)
+        result=await self.f.async_step_view({'view_path':'nest-hub'})
+        self.assertEqual(result['data']['additional_player_slots'], [None, 'media_player.b'])
+        self.assertEqual(result['data']['additional_players'], ['media_player.b'])
+
+    async def test_reject_duplicate_sources(self):
+        data={'name':'TV','primary_player':'media_player.a','additional_player_1':'media_player.a','display':'media_player.screen','dashboard_path':'lovelace'}
+        result=await self.f.async_step_user(data)
+        self.assertEqual(result['errors']['base'], 'duplicate_player')
+
     async def test_missing_or_unknown_view_is_not_created(self):
         data={'name':'Kitchen','primary_player':'media_player.a','additional_players':[],'display':'media_player.screen','dashboard_path':'lovelace','enabled':True}
         await self.f.async_step_user(data)

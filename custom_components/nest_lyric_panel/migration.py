@@ -72,7 +72,7 @@ def flatten_zones(hass, parent):
             identity = data.get('legacy_entry_id', zone_id)
             obsolete = {f'{identity}_{key}' for key in ('enabled', 'add_player', 'remove_player')}
             prefix = f'{identity}_additional_player_'
-            old_slot = entity.unique_id.startswith(prefix) and entity.unique_id[len(prefix):].isdigit() and int(entity.unique_id[len(prefix):]) > len(data.get('additional_players', [])) + 1
+            old_slot = entity.unique_id.startswith(prefix) and entity.unique_id[len(prefix):].isdigit() and int(entity.unique_id[len(prefix):]) > 2
             if entity.platform == DOMAIN and (entity.unique_id in obsolete or old_slot):
                 registry.async_remove(entity.entity_id)
                 break

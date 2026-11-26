@@ -69,8 +69,15 @@ class CastZoneFlow(config_entries.ConfigSubentryFlow):
         schema = _zone_schema(choices)
         errors = {}
         if user_input is not None:
-            if user_input["display"] in [user_input["primary_player"], *user_input.get("additional_players", [])]:
+            user_input = dict(user_input)
+            slots = [user_input.pop("additional_player_1", None), user_input.pop("additional_player_2", None)]
+            # Preserve the two positions independently when one is left empty.
+            user_input["additional_player_slots"] = slots
+            user_input["additional_players"] = [player for player in slots if player]
+            if user_input["display"] in [user_input["primary_player"], *user_input["additional_players"]]:
                 errors["display"] = "source_is_display"
+            elif len(set([user_input["primary_player"], *user_input["additional_players"]])) != 1 + len(user_input["additional_players"]):
+                errors["base"] = "duplicate_player"
             elif any((not entry or other.subentry_id != entry.subentry_id) and other.data.get("display") == user_input["display"] for other in zones(self._get_entry())):
                 errors["display"] = "display_in_use"
             else:
@@ -121,7 +128,8 @@ def _zone_schema(dashboards):
     return vol.Schema({
         vol.Required("name"): str,
         vol.Required("primary_player"): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player")),
-        vol.Optional("additional_players", default=[]): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player", multiple=True)),
+        vol.Optional("additional_player_1"): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player")),
+        vol.Optional("additional_player_2"): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player")),
         vol.Required("display"): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player", integration="cast")),
         vol.Required("dashboard_path"): selector.SelectSelector(selector.SelectSelectorConfig(options=dashboards, mode="dropdown")),
     })

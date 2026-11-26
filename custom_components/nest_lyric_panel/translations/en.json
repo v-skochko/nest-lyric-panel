@@ -40,32 +40,21 @@
         "name": "Translation server URL"
       }
     },
-    "switch": {
-      "zone_enabled": {
-        "name": "Cast zone"
-      }
-    },
     "select": {
       "primary_player": {
-        "name": "Primary player"
+        "name": "Players · Primary"
       },
       "display": {
-        "name": "Cast display"
-      },
-      "add_player": {
-        "name": "Add player"
-      },
-      "remove_player": {
-        "name": "Remove player"
+        "name": "Screen · Cast display"
       },
       "dashboard_path": {
-        "name": "Dashboard"
+        "name": "Dashboard · Dashboard"
       },
       "view_path": {
-        "name": "View"
+        "name": "Dashboard · View"
       },
       "additional_player": {
-        "name": "Additional player {number}"
+        "name": "Players · Additional {number}"
       }
     },
     "sensor": {
@@ -88,8 +77,7 @@
     "cast_zone": {
       "entry_type": "Cast zone",
       "initiate_flow": {
-        "user": "Add Cast zone",
-        "reconfigure": "Edit Cast zone"
+        "user": "Add Cast zone"
       },
       "step": {
         "user": {
@@ -97,21 +85,10 @@
           "data": {
             "name": "Name",
             "primary_player": "Primary player",
-            "additional_players": "Additional players",
             "display": "Cast display",
             "dashboard_path": "Dashboard path",
-            "enabled": "Enabled"
-          }
-        },
-        "reconfigure": {
-          "title": "Edit Cast zone",
-          "data": {
-            "name": "Name",
-            "primary_player": "Primary player",
-            "additional_players": "Additional players",
-            "display": "Cast display",
-            "dashboard_path": "Dashboard path",
-            "enabled": "Enabled"
+            "additional_player_1": "Additional player 1",
+            "additional_player_2": "Additional player 2"
           }
         },
         "view": {
@@ -124,7 +101,8 @@
       "error": {
         "source_is_display": "Display and source must be different entities.",
         "display_in_use": "This display is already used by another zone.",
-        "invalid_view": "Choose an available view."
+        "invalid_view": "Choose an available view.",
+        "duplicate_player": "Choose different players for each field."
       },
       "abort": {
         "no_views": "The dashboard has no available views with paths."
