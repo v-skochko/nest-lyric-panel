@@ -42,19 +42,19 @@
     },
     "select": {
       "primary_player": {
-        "name": "Players · Primary"
+        "name": "Screen and players · 2. Primary"
       },
       "display": {
-        "name": "Screen · Cast display"
+        "name": "Screen and players · 1. Screen"
       },
       "dashboard_path": {
-        "name": "Dashboard · Dashboard"
+        "name": "Dashboard · 1. Dashboard"
       },
       "view_path": {
-        "name": "Dashboard · View"
+        "name": "Dashboard · 2. View"
       },
       "additional_player": {
-        "name": "Players · Additional {number}"
+        "name": "Screen and players · {order}. Additional {number}"
       }
     },
     "sensor": {

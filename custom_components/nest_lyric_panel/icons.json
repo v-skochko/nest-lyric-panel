@@ -1,0 +1,21 @@
+{
+  "entity": {
+    "select": {
+      "dashboard_path": {
+        "default": "mdi:view-dashboard"
+      },
+      "view_path": {
+        "default": "mdi:view-carousel"
+      },
+      "display": {
+        "default": "mdi:television"
+      },
+      "primary_player": {
+        "default": "mdi:speaker"
+      },
+      "additional_player": {
+        "default": "mdi:speaker"
+      }
+    }
+  }
+}

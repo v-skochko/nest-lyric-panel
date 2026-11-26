@@ -37,7 +37,7 @@ class ZoneSelect(SelectEntity):
         self.slot = int(key.rsplit('_', 1)[1]) - 1 if key.startswith('additional_player_') else None
         self._attr_translation_key = 'additional_player' if self.slot is not None else key
         if self.slot is not None:
-            self._attr_translation_placeholders = {'number': str(self.slot + 1)}
+            self._attr_translation_placeholders = {'number': str(self.slot + 1), 'order': str(self.slot + 3)}
         identifier = sub.data.get('legacy_entry_id', sub.subentry_id)
         self._attr_unique_id = f'{identifier}_{key}'
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, identifier)}, name=sub.title, manufacturer='Nest Lyric Panel', model='Cast zone')
