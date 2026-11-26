@@ -14,10 +14,7 @@ class SettingsEntity:
         self.key = key
         self._attr_translation_key = key
         self._attr_unique_id = f"{entry.entry_id}_{key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)}, name="Nest Lyric Panel",
-            manufacturer="Nest Lyric Panel", model="Lyrics service",
-        )
+
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()

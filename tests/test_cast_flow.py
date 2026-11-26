@@ -14,7 +14,7 @@ sys.modules['homeassistant.components.lovelace.const'].LOVELACE_DATA = 'lovelace
 sys.modules['homeassistant.exceptions'].HomeAssistantError = Exception
 class Flow:
     def __init_subclass__(cls, **kwargs): pass
-    def _async_current_entries(self): return []
+    def _get_entry(self): return types.SimpleNamespace(subentries={})
     async def async_set_unique_id(self, value): self.unique_id = value
     def _abort_if_unique_id_configured(self): pass
     def async_show_form(self, **kw): return {'type':'form', **kw}
@@ -24,6 +24,7 @@ class Flow:
 class OptionsFlow: pass
 sys.modules['homeassistant.config_entries'].ConfigFlow = Flow
 sys.modules['homeassistant.config_entries'].OptionsFlow = OptionsFlow
+sys.modules['homeassistant.config_entries'].ConfigSubentryFlow = Flow
 sel=sys.modules['homeassistant.helpers.selector']
 sel.EntitySelectorConfig=lambda **kw:kw
 sel.SelectSelectorConfig=lambda **kw:kw
@@ -39,7 +40,7 @@ class Hass:
     data={'lovelace':types.SimpleNamespace(dashboards={'lovelace':Dashboard()})}
 
 class FlowTests(unittest.IsolatedAsyncioTestCase):
-    def setUp(self): self.f=mod.NestLyricPanelConfigFlow();self.f.hass=Hass()
+    def setUp(self): self.f=mod.CastZoneFlow();self.f.hass=Hass()
     async def test_create_and_derive_title(self):
         data={'name':'Kitchen','primary_player':'media_player.a','additional_players':[],'display':'media_player.screen','dashboard_path':'lovelace','enabled':True}
         step=await self.f.async_step_user(data);self.assertEqual(step['step_id'],'view')

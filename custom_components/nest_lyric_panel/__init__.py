@@ -126,35 +126,36 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
     from .cast_manager import CastZone
     data = hass.data[DOMAIN]
     data.setdefault('zones', {})
-    # Preserve existing settings exactly once, then keep them independent of zones.
     if not data['settings_initialized']:
         legacy = next((item for item in hass.config_entries.async_entries(DOMAIN) if item.unique_id == DOMAIN), entry)
         data['settings'] = dict(legacy.options)
         data['settings_initialized'] = True
         await data['settings_store'].async_save(data['settings'])
-    if entry.unique_id == DOMAIN:
-        await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text'])
-    if entry.data.get('display'):
-        zone = CastZone(hass, dict(entry.data))
-        data['zones'][entry.entry_id] = zone
+    if entry.unique_id != DOMAIN:
+        # Legacy zone entries are migrated only after the parent is ready.
+        return True
+    from .migration import detach_legacy_settings_device, migrate_zones
+    await migrate_zones(hass, entry)
+    detach_legacy_settings_device(hass, entry)
+    for subentry in entry.get_subentries_of_type('cast_zone'):
+        zone = CastZone(hass, dict(subentry.data))
+        data['zones'][subentry.subentry_id] = zone
         zone.start()
-        await hass.config_entries.async_forward_entry_setups(entry, ['sensor'])
+    entry.async_on_unload(entry.add_update_listener(_reload_zones))
+    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text', 'sensor', 'switch', 'select'])
     return True
 
-async def _options_updated(hass:HomeAssistant,entry:ConfigEntry):
-    hass.data[DOMAIN]['settings']=dict(entry.options)
-    await hass.data[DOMAIN]['settings_store'].async_save(hass.data[DOMAIN]['settings'])
-    hass.data[DOMAIN]['cache'].clear()
-    hass.bus.async_fire('nest_lyric_panel_settings_changed')
+async def _reload_zones(hass:HomeAssistant, entry:ConfigEntry):
+    await hass.config_entries.async_reload(entry.entry_id)
 
 async def async_unload_entry(hass:HomeAssistant,entry:ConfigEntry):
-    if entry.unique_id == DOMAIN:
-        if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text']):
-            return False
-        # Settings remain available to other running zones.
-    if entry.data.get('display') and not await hass.config_entries.async_unload_platforms(entry, ['sensor']):
+    if entry.unique_id != DOMAIN:
+        return True
+    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text', 'sensor', 'switch', 'select']):
         return False
-    zone = hass.data[DOMAIN].get('zones', {}).pop(entry.entry_id, None)
-    if zone:
-        zone.stop()
+    zones = hass.data[DOMAIN].get('zones', {})
+    for subentry in entry.get_subentries_of_type('cast_zone'):
+        zone = zones.pop(subentry.subentry_id, None)
+        if zone:
+            zone.stop()
     return True

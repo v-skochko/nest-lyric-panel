@@ -1,22 +1,25 @@
 """State and active player for a Cast zone."""
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers.entity import DeviceInfo
 from . import DOMAIN
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    zone = hass.data[DOMAIN]['zones'].get(entry.entry_id)
-    if zone:
-        async_add_entities([ZoneSensor(entry, zone)])
+    for subentry in entry.get_subentries_of_type('cast_zone'):
+        zone = hass.data[DOMAIN]['zones'].get(subentry.subentry_id)
+        if zone:
+            async_add_entities([ZoneSensor(entry, subentry, zone)], config_subentry_id=subentry.subentry_id)
 
 
 class ZoneSensor(SensorEntity):
     _attr_has_entity_name = True
-    _attr_name = 'Cast status'
-    def __init__(self, entry, zone):
+    _attr_translation_key = 'cast_status'
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ['idle', 'cast', 'showing', 'waiting_retry', 'unavailable', 'error', 'disabled', 'close']
+    def __init__(self, entry, subentry, zone):
         self.zone = zone
-        self._attr_unique_id = f'{entry.entry_id}_cast_status'
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, entry.entry_id)}, name=entry.title, manufacturer='Nest Lyric Panel', model='Cast zone')
+        self._attr_unique_id = f'{subentry.data.get("legacy_entry_id", subentry.subentry_id)}_cast_status'
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, subentry.data.get('legacy_entry_id', subentry.subentry_id))}, name=subentry.title, manufacturer='Nest Lyric Panel', model='Cast zone')
 
     @property
     def native_value(self):

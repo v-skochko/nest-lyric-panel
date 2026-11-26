@@ -2,45 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "Cast-зона",
-        "data": {
-          "name": "Назва",
-          "primary_player": "Основний плеєр",
-          "additional_players": "Додаткові плеєри",
-          "display": "Cast-екран",
-          "dashboard_path": "Шлях дашборда",
-          "enabled": "Увімкнено"
-        }
-      },
-      "reconfigure": {
-        "title": "Редагувати Cast-зону",
-        "data": {
-          "name": "Назва",
-          "primary_player": "Основний плеєр",
-          "additional_players": "Додаткові плеєри",
-          "display": "Cast-екран",
-          "dashboard_path": "Шлях дашборда",
-          "enabled": "Увімкнено"
-        }
-      },
-      "view": {
-        "title": "Сторінка дашборда",
-        "data": {
-          "view_path": "Сторінка"
-        }
+        "title": "Nest Lyric Panel",
+        "description": "Спільний сервіс лірики та Cast-зони."
       }
     },
     "abort": {
-      "already_configured": "Nest Lyric Panel уже налаштовано.",
-      "no_views": "Дашборд не має доступних сторінок із шляхами."
-    },
-    "initiate_flow": {
-      "user": "Додати Cast-зону"
-    },
-    "error": {
-      "source_is_display": "Екран і джерело мають бути різними сутностями.",
-      "display_in_use": "Цей екран уже використовується іншою зоною.",
-      "invalid_view": "Оберіть доступну сторінку."
+      "already_configured": "Nest Lyric Panel уже налаштовано."
     }
   },
   "options": {
@@ -71,6 +38,93 @@
     "text": {
       "translation_url": {
         "name": "Адреса сервера перекладу"
+      }
+    },
+    "switch": {
+      "zone_enabled": {
+        "name": "Cast-зона"
+      }
+    },
+    "select": {
+      "primary_player": {
+        "name": "Основний плеєр"
+      },
+      "display": {
+        "name": "Cast-екран"
+      },
+      "add_player": {
+        "name": "Додати плеєр"
+      },
+      "remove_player": {
+        "name": "Прибрати плеєр"
+      },
+      "dashboard_path": {
+        "name": "Дашборд"
+      },
+      "view_path": {
+        "name": "Сторінка"
+      }
+    },
+    "sensor": {
+      "cast_status": {
+        "name": "Стан Cast",
+        "state": {
+          "idle": "Очікування",
+          "cast": "Запуск",
+          "showing": "Панель відображається",
+          "waiting_retry": "Очікування повтору",
+          "unavailable": "Екран недоступний",
+          "error": "Помилка",
+          "disabled": "Вимкнено",
+          "close": "Закриття"
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "cast_zone": {
+      "entry_type": "Cast-зона",
+      "initiate_flow": {
+        "user": "Додати Cast-зону",
+        "reconfigure": "Редагувати Cast-зону"
+      },
+      "step": {
+        "user": {
+          "title": "Cast-зона",
+          "data": {
+            "name": "Назва",
+            "primary_player": "Основний плеєр",
+            "additional_players": "Додаткові плеєри",
+            "display": "Cast-екран",
+            "dashboard_path": "Шлях дашборда",
+            "enabled": "Увімкнено"
+          }
+        },
+        "reconfigure": {
+          "title": "Редагувати Cast-зону",
+          "data": {
+            "name": "Назва",
+            "primary_player": "Основний плеєр",
+            "additional_players": "Додаткові плеєри",
+            "display": "Cast-екран",
+            "dashboard_path": "Шлях дашборда",
+            "enabled": "Увімкнено"
+          }
+        },
+        "view": {
+          "title": "Сторінка дашборда",
+          "data": {
+            "view_path": "Сторінка"
+          }
+        }
+      },
+      "error": {
+        "source_is_display": "Екран і джерело мають бути різними сутностями.",
+        "display_in_use": "Цей екран уже використовується іншою зоною.",
+        "invalid_view": "Оберіть доступну сторінку."
+      },
+      "abort": {
+        "no_views": "Дашборд не має доступних сторінок із шляхами."
       }
     }
   }

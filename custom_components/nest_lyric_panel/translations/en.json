@@ -2,45 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "Cast zone",
-        "data": {
-          "name": "Name",
-          "primary_player": "Primary player",
-          "additional_players": "Additional players",
-          "display": "Cast display",
-          "dashboard_path": "Dashboard path",
-          "enabled": "Enabled"
-        }
-      },
-      "reconfigure": {
-        "title": "Edit Cast zone",
-        "data": {
-          "name": "Name",
-          "primary_player": "Primary player",
-          "additional_players": "Additional players",
-          "display": "Cast display",
-          "dashboard_path": "Dashboard path",
-          "enabled": "Enabled"
-        }
-      },
-      "view": {
-        "title": "Dashboard view",
-        "data": {
-          "view_path": "View"
-        }
+        "title": "Nest Lyric Panel",
+        "description": "Shared lyrics service and Cast zones."
       }
     },
     "abort": {
-      "already_configured": "Nest Lyric Panel is already configured.",
-      "no_views": "The dashboard has no available views with paths."
-    },
-    "initiate_flow": {
-      "user": "Add Cast zone"
-    },
-    "error": {
-      "source_is_display": "Display and source must be different entities.",
-      "display_in_use": "This display is already used by another zone.",
-      "invalid_view": "Choose an available view."
+      "already_configured": "Nest Lyric Panel is already configured."
     }
   },
   "options": {
@@ -71,6 +38,93 @@
     "text": {
       "translation_url": {
         "name": "Translation server URL"
+      }
+    },
+    "switch": {
+      "zone_enabled": {
+        "name": "Cast zone"
+      }
+    },
+    "select": {
+      "primary_player": {
+        "name": "Primary player"
+      },
+      "display": {
+        "name": "Cast display"
+      },
+      "add_player": {
+        "name": "Add player"
+      },
+      "remove_player": {
+        "name": "Remove player"
+      },
+      "dashboard_path": {
+        "name": "Dashboard"
+      },
+      "view_path": {
+        "name": "View"
+      }
+    },
+    "sensor": {
+      "cast_status": {
+        "name": "Cast status",
+        "state": {
+          "idle": "Idle",
+          "cast": "Starting",
+          "showing": "Showing panel",
+          "waiting_retry": "Waiting to retry",
+          "unavailable": "Display unavailable",
+          "error": "Error",
+          "disabled": "Disabled",
+          "close": "Closing"
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "cast_zone": {
+      "entry_type": "Cast zone",
+      "initiate_flow": {
+        "user": "Add Cast zone",
+        "reconfigure": "Edit Cast zone"
+      },
+      "step": {
+        "user": {
+          "title": "Cast zone",
+          "data": {
+            "name": "Name",
+            "primary_player": "Primary player",
+            "additional_players": "Additional players",
+            "display": "Cast display",
+            "dashboard_path": "Dashboard path",
+            "enabled": "Enabled"
+          }
+        },
+        "reconfigure": {
+          "title": "Edit Cast zone",
+          "data": {
+            "name": "Name",
+            "primary_player": "Primary player",
+            "additional_players": "Additional players",
+            "display": "Cast display",
+            "dashboard_path": "Dashboard path",
+            "enabled": "Enabled"
+          }
+        },
+        "view": {
+          "title": "Dashboard view",
+          "data": {
+            "view_path": "View"
+          }
+        }
+      },
+      "error": {
+        "source_is_display": "Display and source must be different entities.",
+        "display_in_use": "This display is already used by another zone.",
+        "invalid_view": "Choose an available view."
+      },
+      "abort": {
+        "no_views": "The dashboard has no available views with paths."
       }
     }
   }
