@@ -6,9 +6,10 @@ import types
 import unittest
 from pathlib import Path
 
-for name in ('fake_flow', 'homeassistant', 'homeassistant.config_entries', 'homeassistant.core', 'homeassistant.helpers', 'homeassistant.helpers.selector', 'homeassistant.components', 'homeassistant.components.lovelace', 'homeassistant.components.lovelace.const', 'homeassistant.exceptions'):
+for name in ('fake_flow', 'fake_flow.zones', 'homeassistant', 'homeassistant.config_entries', 'homeassistant.core', 'homeassistant.helpers', 'homeassistant.helpers.selector', 'homeassistant.components', 'homeassistant.components.lovelace', 'homeassistant.components.lovelace.const', 'homeassistant.exceptions'):
     sys.modules[name] = types.ModuleType(name)
 sys.modules['fake_flow'].DOMAIN = 'nest_lyric_panel'
+sys.modules['fake_flow.zones'].zones = lambda entry: []
 sys.modules['homeassistant.core'].callback = lambda fn: fn
 sys.modules['homeassistant.components.lovelace.const'].LOVELACE_DATA = 'lovelace'
 sys.modules['homeassistant.exceptions'].HomeAssistantError = Exception

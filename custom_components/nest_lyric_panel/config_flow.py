@@ -10,6 +10,7 @@ from homeassistant.components.lovelace.const import LOVELACE_DATA
 from homeassistant.exceptions import HomeAssistantError
 
 from . import DOMAIN
+from .zones import zones
 
 
 def _options_schema(options):
@@ -61,9 +62,6 @@ class CastZoneFlow(config_entries.ConfigSubentryFlow):
     async def async_step_user(self, user_input=None):
         return await self._zone_step("user", user_input)
 
-    async def async_step_reconfigure(self, user_input=None):
-        return await self._zone_step("reconfigure", user_input)
-
     async def _zone_step(self, step, user_input):
         entry = self._get_reconfigure_subentry() if step == "reconfigure" else None
         dashboards = self._dashboards()
@@ -73,7 +71,7 @@ class CastZoneFlow(config_entries.ConfigSubentryFlow):
         if user_input is not None:
             if user_input["display"] in [user_input["primary_player"], *user_input.get("additional_players", [])]:
                 errors["display"] = "source_is_display"
-            elif any((not entry or other.subentry_id != entry.subentry_id) and other.data.get("display") == user_input["display"] for other in self._get_entry().subentries.values()):
+            elif any((not entry or other.subentry_id != entry.subentry_id) and other.data.get("display") == user_input["display"] for other in zones(self._get_entry())):
                 errors["display"] = "display_in_use"
             else:
                 self._zone_values = user_input
@@ -126,7 +124,6 @@ def _zone_schema(dashboards):
         vol.Optional("additional_players", default=[]): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player", multiple=True)),
         vol.Required("display"): selector.EntitySelector(selector.EntitySelectorConfig(domain="media_player", integration="cast")),
         vol.Required("dashboard_path"): selector.SelectSelector(selector.SelectSelectorConfig(options=dashboards, mode="dropdown")),
-        vol.Optional("enabled", default=True): bool,
     })
 
 

@@ -2,13 +2,14 @@
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.helpers.entity import DeviceInfo
 from . import DOMAIN
+from .zones import zones
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    for subentry in entry.get_subentries_of_type('cast_zone'):
+    for subentry in zones(entry):
         zone = hass.data[DOMAIN]['zones'].get(subentry.subentry_id)
         if zone:
-            async_add_entities([ZoneSensor(entry, subentry, zone)], config_subentry_id=subentry.subentry_id)
+            async_add_entities([ZoneSensor(entry, subentry, zone)])
 
 
 class ZoneSensor(SensorEntity):

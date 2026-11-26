@@ -63,6 +63,9 @@
       },
       "view_path": {
         "name": "View"
+      },
+      "additional_player": {
+        "name": "Additional player {number}"
       }
     },
     "sensor": {

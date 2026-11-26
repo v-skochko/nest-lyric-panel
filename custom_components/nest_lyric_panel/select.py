@@ -7,23 +7,26 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers import entity_registry as er
 from . import DOMAIN
+from .zones import zones, update_zone
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     dashboards = hass.data.get(LOVELACE_DATA)
-    for sub in entry.get_subentries_of_type('cast_zone'):
-        views = {}
-        if dashboards:
-            for path, dashboard in dashboards.dashboards.items():
-                key = path or 'lovelace'
-                if path is None and 'lovelace' in dashboards.dashboards:
-                    continue
-                try:
-                    config = await dashboard.async_load(False)
-                except HomeAssistantError:
-                    continue
-                views[key] = {v['path']: v.get('title') or v['path'] for v in config.get('views', []) if v.get('path')}
-        async_add_entities([ZoneSelect(entry, sub, key, views) for key in ('primary_player','display','add_player','remove_player','dashboard_path','view_path')], config_subentry_id=sub.subentry_id)
+    views = {}
+    if dashboards:
+        for path, dashboard in dashboards.dashboards.items():
+            key = path or 'lovelace'
+            if path is None and 'lovelace' in dashboards.dashboards:
+                continue
+            try:
+                config = await dashboard.async_load(False)
+            except HomeAssistantError:
+                continue
+            views[key] = {v['path']: v.get('title') or v['path'] for v in config.get('views', []) if v.get('path')}
+    for sub in zones(entry):
+        keys = ['primary_player', 'display', 'dashboard_path', 'view_path']
+        keys.extend(f'additional_player_{n}' for n in range(1, len(sub.data.get('additional_players', [])) + 2))
+        async_add_entities([ZoneSelect(entry, sub, key, views) for key in keys])
 
 
 class ZoneSelect(SelectEntity):
@@ -31,14 +34,17 @@ class ZoneSelect(SelectEntity):
     _attr_entity_category = EntityCategory.CONFIG
     def __init__(self, entry, sub, key, views):
         self.entry, self.sub, self.key, self.views = entry, sub, key, views
-        self._attr_translation_key = key
+        self.slot = int(key.rsplit('_', 1)[1]) - 1 if key.startswith('additional_player_') else None
+        self._attr_translation_key = 'additional_player' if self.slot is not None else key
+        if self.slot is not None:
+            self._attr_translation_placeholders = {'number': str(self.slot + 1)}
         identifier = sub.data.get('legacy_entry_id', sub.subentry_id)
         self._attr_unique_id = f'{identifier}_{key}'
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, identifier)}, name=sub.title, manufacturer='Nest Lyric Panel', model='Cast zone')
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()
-        if self.key in ('primary_player', 'display', 'add_player'):
+        if self.key in ('primary_player', 'display') or self.slot is not None:
             self.async_on_remove(self.hass.bus.async_listen(EVENT_STATE_CHANGED, self._players_changed))
 
     @callback
@@ -53,33 +59,38 @@ class ZoneSelect(SelectEntity):
             return sorted(self.views)
         if self.key == 'view_path':
             return sorted(self.views.get(data.get('dashboard_path'), {}))
-        if self.key == 'remove_player':
-            return ['—', *data.get('additional_players', [])]
         players = {s.entity_id for s in self.hass.states.async_all('media_player')}
         if self.key == 'display':
             registry = er.async_get(self.hass)
             players = {x for x in players if (entity := registry.async_get(x)) and entity.platform == 'cast'}
-        if self.key in ('display', 'primary_player') and data.get(self.key):
-            players.add(data[self.key])
-        players = sorted(players)
-        if self.key == 'add_player':
-            return ['—', *[x for x in players if x not in [data.get('display'), data.get('primary_player'), *data.get('additional_players', [])]]]
-        return players
+        current = self.current_option
+        if current and current != '—':
+            players.add(current)
+        if self.slot is not None:
+            others = [v for i, v in enumerate(data.get('additional_players', [])) if i != self.slot]
+            players -= set([data.get('display'), data.get('primary_player'), *others])
+            return ['—', *sorted(players)]
+        return sorted(players)
 
     @property
     def current_option(self):
-        if self.key in ('add_player', 'remove_player'):
-            return '—'
+        if self.slot is not None:
+            players = self.sub.data.get('additional_players', [])
+            return players[self.slot] if self.slot < len(players) else '—'
         return self.sub.data.get(self.key)
 
     async def async_select_option(self, option):
-        if option == '—':
-            return
         data = dict(self.sub.data)
-        if self.key == 'add_player':
-            data['additional_players'] = [*data.get('additional_players', []), option]
-        elif self.key == 'remove_player':
-            data['additional_players'] = [x for x in data.get('additional_players', []) if x != option]
+        if self.slot is not None:
+            players = list(data.get('additional_players', []))
+            if self.slot < len(players):
+                if option == '—':
+                    players.pop(self.slot)
+                else:
+                    players[self.slot] = option
+            elif option != '—':
+                players.append(option)
+            data['additional_players'] = players
         elif self.key == 'dashboard_path':
             available = self.views.get(option, {})
             if not available:
@@ -91,6 +102,8 @@ class ZoneSelect(SelectEntity):
             data[self.key] = option
         if data['display'] in [data['primary_player'], *data.get('additional_players', [])]:
             raise HomeAssistantError('Display and source must be different entities')
-        if any(other.subentry_id != self.sub.subentry_id and other.data.get('display') == data['display'] for other in self.entry.get_subentries_of_type('cast_zone')):
+        if data['primary_player'] in data.get('additional_players', []):
+            raise HomeAssistantError('Primary player cannot also be an additional player')
+        if any(other.subentry_id != self.sub.subentry_id and other.data.get('display') == data['display'] for other in zones(self.entry)):
             raise HomeAssistantError('Display already belongs to another zone')
-        self.hass.config_entries.async_update_subentry(self.entry, self.sub, data=data, unique_id=data['display'])
+        update_zone(self.hass, self.entry, self.sub.subentry_id, data)

@@ -63,6 +63,9 @@
       },
       "view_path": {
         "name": "Сторінка"
+      },
+      "additional_player": {
+        "name": "Додатковий плеєр {number}"
       }
     },
     "sensor": {

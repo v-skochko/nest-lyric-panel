@@ -134,15 +134,17 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
     if entry.unique_id != DOMAIN:
         # Legacy zone entries are migrated only after the parent is ready.
         return True
-    from .migration import detach_legacy_settings_device, migrate_zones
+    from .migration import detach_legacy_settings_device, migrate_zones, flatten_zones
+    from .zones import zones
     await migrate_zones(hass, entry)
+    flatten_zones(hass, entry)
     detach_legacy_settings_device(hass, entry)
-    for subentry in entry.get_subentries_of_type('cast_zone'):
+    for subentry in zones(entry):
         zone = CastZone(hass, dict(subentry.data))
         data['zones'][subentry.subentry_id] = zone
         zone.start()
     entry.async_on_unload(entry.add_update_listener(_reload_zones))
-    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text', 'sensor', 'switch', 'select'])
+    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text', 'sensor', 'select'])
     return True
 
 async def _reload_zones(hass:HomeAssistant, entry:ConfigEntry):
@@ -151,11 +153,21 @@ async def _reload_zones(hass:HomeAssistant, entry:ConfigEntry):
 async def async_unload_entry(hass:HomeAssistant,entry:ConfigEntry):
     if entry.unique_id != DOMAIN:
         return True
-    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text', 'sensor', 'switch', 'select']):
+    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text', 'sensor', 'select']):
         return False
-    zones = hass.data[DOMAIN].get('zones', {})
-    for subentry in entry.get_subentries_of_type('cast_zone'):
-        zone = zones.pop(subentry.subentry_id, None)
-        if zone:
-            zone.stop()
+    live_zones = hass.data[DOMAIN].get('zones', {})
+    for zone in live_zones.values():
+        zone.stop()
+    live_zones.clear()
     return True
+
+
+async def async_remove_config_entry_device(hass, entry, device_entry):
+    """Remove a Cast zone when its device is removed in Home Assistant."""
+    all_zones = dict(entry.data.get('zones', {}))
+    for zone_id, data in all_zones.items():
+        if (DOMAIN, data.get('legacy_entry_id', zone_id)) in device_entry.identifiers:
+            del all_zones[zone_id]
+            hass.config_entries.async_update_entry(entry, data={**entry.data, 'zones': all_zones})
+            return True
+    return False
