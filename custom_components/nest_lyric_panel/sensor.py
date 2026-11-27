@@ -28,7 +28,7 @@ class ZoneSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        return {'active_player': self.zone.policy.active_source or self.zone.config['primary_player'], 'display': self.zone.display}
+        return {'active_player': self.zone.policy.active_source or self.zone.config['primary_player'], 'display': self.zone.display, 'reason': self.zone.reason}
 
     async def async_added_to_hass(self):
         self.zone.listeners.add(self.async_write_ha_state)

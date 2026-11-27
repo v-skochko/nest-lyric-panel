@@ -11,7 +11,7 @@ class NestLyricEditor extends HTMLElement {
     if (value===''||value===undefined) delete target[key]; else target[key]=value;
     this.emit();
   }
-  section(title) { const d=document.createElement('details'); d.open=true; const s=document.createElement('summary');s.textContent=title;d.append(s);this.shadowRoot.append(d);return d; }
+  section(title) { const d=document.createElement('section'); const h=document.createElement('h3'); h.textContent=title; d.append(h); this.shadowRoot.append(d); return d; }
   field(parent,label,key,{inner=false,kind='text',min,max,step,domains,placeholder,defaultValue,choices}={}) {
     const wrap=document.createElement('label'), caption=document.createElement('span');caption.textContent=label;wrap.append(caption);
     const values=inner?(this.config.lyrics||{}):this.config; let el;
@@ -41,19 +41,14 @@ class NestLyricEditor extends HTMLElement {
     const name=document.createElement('input');name.placeholder=this.t('Назва кімнати як у перемикачі','Room name as in selector');const add=document.createElement('button');add.type='button';add.textContent=this.t('Додати кімнату','Add room');add.addEventListener('click',()=>{const n=name.value.trim();if(!n||this.config.rooms?.[n])return;this.config.rooms={...(this.config.rooms||{}),[n]:{}};this.emit();this.render()});parent.append(name,add);
   }
   render() {
-    this.rendered=true;this.shadowRoot.replaceChildren();const style=document.createElement('style');style.textContent=':host{display:block;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif)}details{border-bottom:1px solid var(--divider-color);padding:10px 0}summary{font-weight:600;cursor:pointer}label{display:flex;flex-direction:column;gap:5px;margin:12px 0}input,select,button{box-sizing:border-box;padding:10px;border:1px solid var(--divider-color);border-radius:5px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}input[type=checkbox]{width:20px;height:20px}fieldset{margin:12px 0;border:1px solid var(--divider-color);border-radius:5px}ha-entity-picker{width:100%}';this.shadowRoot.append(style);
+    this.rendered=true;this.shadowRoot.replaceChildren();const style=document.createElement('style');style.textContent=':host{display:block;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif)}section{border-bottom:1px solid var(--divider-color);padding:10px 0}h3{font-size:1rem;font-weight:600;margin:0}label{display:flex;flex-direction:column;gap:5px;margin:12px 0}input,select,button{box-sizing:border-box;padding:10px;border:1px solid var(--divider-color);border-radius:5px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}input[type=checkbox]{width:20px;height:20px}fieldset{margin:12px 0;border:1px solid var(--divider-color);border-radius:5px}ha-entity-picker{width:100%}';this.shadowRoot.append(style);
     const source=this.section(this.t('Джерело','Source'));
     this.field(source,this.t('Плеєр','Media player'),'entity',{kind:'entity',domains:['media_player']});
     if(this.display){
       this.field(source,this.t('Cast-зона (сенсор стану)','Cast zone (status sensor)'),'zone_entity',{kind:'entity',domains:['sensor']});
-      this.field(source,this.t('Перемикач кімнати','Room selector'),'room_selector',{kind:'entity',domains:['input_select','select']});
-      this.field(source,this.t('Перемикач джерела','Source selector'),'source_selector',{kind:'entity',domains:['input_select','select']});
-      this.field(source,this.t('Назва джерела YouTube','YouTube source name'),'youtube_source',{placeholder:'YouTube'});
-      const hint=document.createElement('p');hint.textContent=this.t('Для вибору кімнат залиште поле «Плеєр» порожнім.','Leave Media player empty to use room selection.');source.append(hint);
-      this.roomEditor(source);
+      const hint=document.createElement('p');hint.textContent=this.t('Cast-зона має пріоритет над окремим плеєром.','Cast zone takes priority over a standalone player.');source.append(hint);
     }
     const inner=this.display, lyr=this.section(this.t('Лірика та синхронізація','Lyrics and synchronization'));
-    this.field(lyr,this.t('Зміщення синхронізації, с','Synchronization offset, s'),'sync_offset',{inner,kind:'number',step:0.1});
     this.field(lyr,this.t('Показувати режим','Show mode'),'show_mode',{inner,kind:'checkbox',defaultValue:true});
     const styleGroup=this.section(this.t('Вигляд','Appearance'));
     if(this.display)this.field(styleGroup,this.t('Режим розміщення','Display layout'),'display_mode',{kind:'select',choices:[['auto',this.t('Авто','Auto')],['column',this.t('Колонка','Column')],['compact',this.t('Компактний','Compact')],['wide',this.t('Широкий','Wide')]] ,defaultValue:'auto'});

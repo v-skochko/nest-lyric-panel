@@ -20,6 +20,7 @@ class CastZone:
         self.lock = asyncio.Lock()
         self.unsubscribers = []
         self.status = 'idle'
+        self.reason = 'waiting_for_playback'
         self.listeners = set()
 
     def start(self):
@@ -42,8 +43,7 @@ class CastZone:
         entity = event.data['entity_id']
         if entity in self.policy.sources:
             state = event.data.get('new_state')
-            if state and state.state not in ('unknown', 'unavailable'):
-                self.policy.update_source(entity, state.state == 'playing', time.monotonic())
+            self.policy.update_source(entity, bool(state and state.state == 'playing'), time.monotonic())
         await self.evaluate()
         self.notify()
 
@@ -65,6 +65,7 @@ class CastZone:
             state = self.hass.states.get(self.display)
             decision = self.policy.decision(time.monotonic(), self.owned(state), bool(state and state.state not in ('unknown', 'unavailable')))
             self.status = decision
+            self.reason = {'idle':'waiting_for_playback','unavailable':'display_unavailable','cast':'starting_cast','waiting_retry':'waiting_to_retry','showing':'panel_showing','close':'closing_panel'}.get(decision, decision)
             if decision == 'cast':
                 self.policy.attempted(time.monotonic())
                 was_muted = state.attributes.get('is_volume_muted')
@@ -82,8 +83,10 @@ class CastZone:
                     await asyncio.sleep(3)
                     if self.owned(self.hass.states.get(self.display)):
                         self.status = 'showing'
+                        self.reason = 'panel_showing'
                 except Exception:
                     self.status = 'error'
+                    self.reason = 'cast_request_failed'
                     _LOGGER.exception('Cast failed for zone %s', self.config['name'])
                 finally:
                     current = self.hass.states.get(self.display)
@@ -99,4 +102,5 @@ class CastZone:
                         await self.hass.services.async_call('media_player', 'turn_off', {'entity_id': self.display}, blocking=True)
                     except Exception:
                         self.status = 'error'
+                        self.reason = 'close_failed'
                         _LOGGER.exception('Could not stop Cast zone %s', self.config['name'])

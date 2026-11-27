@@ -47,6 +47,13 @@ class CastTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([(x[0],x[1]) for x in self.h.services.calls], [('media_player','volume_mute'), ('cast','show_lovelace_view'), ('media_player','volume_mute')])
         self.assertFalse(self.h.states.get('screen').attributes['is_volume_muted'])
 
+    async def test_unavailable_source_stops_being_active(self):
+        self.z.policy.update_source('music', True, 1)
+        event = types.SimpleNamespace(data={'entity_id':'music', 'new_state':State('unavailable')})
+        await self.z.changed(event)
+        self.assertIsNone(self.z.policy.active_source)
+        self.assertIsNotNone(self.z.policy.stopped_at)
+
     async def test_never_closes_other_app(self):
         self.h.states.values['screen'] = State('playing', app_id='other', media_title='Video')
         self.z.policy.update_source('music', True, 1); self.z.policy.update_source('music', False, 2)

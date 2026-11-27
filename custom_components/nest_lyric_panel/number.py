@@ -5,6 +5,7 @@ from .entity import SettingsEntity
 
 async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities([
+        SettingsNumber(entry, "sync_offset", "Зміщення синхронізації", 0, -30, 30, 0.1, "s"),
         SettingsNumber(entry, "sync_tolerance", "Допустима різниця тривалості", 2, 0, 60, 0.5, "s"),
         SettingsNumber(entry, "cache_minutes", "Тривалість кешу лірики", 60, 0, 1440, 1, "min"),
     ])

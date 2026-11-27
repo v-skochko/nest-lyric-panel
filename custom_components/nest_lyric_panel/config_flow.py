@@ -16,6 +16,7 @@ from .zones import zones
 def _options_schema(options):
     return vol.Schema({
         vol.Optional("translation_url", default=options.get("translation_url", "")): str,
+        vol.Optional("sync_offset", default=options.get("sync_offset", 0)): vol.All(vol.Coerce(float), vol.Range(min=-30, max=30)),
         vol.Optional("sync_tolerance", default=options.get("sync_tolerance", 2)): vol.All(vol.Coerce(float), vol.Range(min=0, max=60)),
         vol.Optional("cache_minutes", default=options.get("cache_minutes", 60)): vol.All(vol.Coerce(int), vol.Range(min=0, max=1440)),
     })

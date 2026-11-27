@@ -18,7 +18,8 @@
         "data": {
           "translation_url": "Translation endpoint URL",
           "sync_tolerance": "Maximum duration difference in seconds",
-          "cache_minutes": "Lyrics cache duration in minutes"
+          "cache_minutes": "Lyrics cache duration in minutes",
+          "sync_offset": "Synchronization offset in seconds"
         }
       }
     },
@@ -33,6 +34,9 @@
       },
       "cache_minutes": {
         "name": "Lyrics cache duration"
+      },
+      "sync_offset": {
+        "name": "Synchronization offset in seconds"
       }
     },
     "text": {

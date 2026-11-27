@@ -74,6 +74,12 @@ def lyrics_mode(status, text, has_timed, track_duration, lyrics_duration, transl
 async def mode(hass,connection,msg):
     settings=hass.data[DOMAIN]['settings']; connection.send_result(msg['id'],int(lyrics_mode(msg['status'],msg['text'],msg['has_timed'],msg['track_duration'],msg['lyrics_duration'],bool(settings.get('translation_url')),settings.get('sync_tolerance',2))))
 
+@websocket_api.websocket_command({vol.Required('type'): 'nest_lyric_panel/settings'})
+@websocket_api.async_response
+async def card_settings(hass, connection, msg):
+    """Expose only the settings needed by cards."""
+    connection.send_result(msg['id'], {'sync_offset': hass.data[DOMAIN]['settings'].get('sync_offset')})
+
 @websocket_api.websocket_command({vol.Required('type'):'nest_lyric_panel/lookup',vol.Required('artist'):vol.All(str,vol.Length(min=1,max=300)),vol.Required('title'):vol.All(str,vol.Length(min=1,max=300)),vol.Optional('album',default=''):vol.All(str,vol.Length(max=300)),vol.Optional('duration',default=0):vol.Coerce(float)})
 @websocket_api.async_response
 async def lookup(hass,connection,msg):
@@ -117,6 +123,7 @@ async def async_setup(hass:HomeAssistant,config):
         StaticPathConfig('/nest_lyric_panel/nest-lyric-panel.js',str(frontend/'nest-lyric-panel.js'),True),
         StaticPathConfig('/nest_lyric_panel/nest-lyric-display.js',str(frontend/'nest-lyric-display.js'),True),
     ])
+    websocket_api.async_register_command(hass,card_settings)
     websocket_api.async_register_command(hass,lookup)
     websocket_api.async_register_command(hass,translate)
     websocket_api.async_register_command(hass,mode)

@@ -27,7 +27,15 @@ class NestLyricDisplay extends HTMLElement {
     const img=this.shadowRoot.querySelector('.art');const fallback=h.states[player]?.attributes||{};const sameTrack=a.media_title&&a.media_artist&&a.media_title===fallback.media_title&&a.media_artist===fallback.media_artist;const image=a.entity_picture_local||a.entity_picture||(sameTrack&&(fallback.entity_picture_local||fallback.entity_picture))||'';if(image!==this.currentImage){this.currentImage=image;if(image)img.src=image.startsWith('/')&&typeof h.hassUrl==='function'?h.hassUrl(image):image;else img.removeAttribute('src');}img.style.visibility=image?'visible':'hidden';
   }
   resolvePlayer(h){
-    if(this.config.zone_entity)return h.states[this.config.zone_entity]?.attributes?.active_player||'';
+    if(this.config.zone_entity){
+      const active=h.states[this.config.zone_entity]?.attributes?.active_player||'';
+      const app=String(h.states[active]?.attributes?.app_name||'').toLowerCase();
+      if(app.includes('youtube')){
+        const room=Object.values(this.config.rooms||{}).find(r=>r.cast===active);
+        if(room?.physical)return room.physical;
+      }
+      return active;
+    }
     if(this.config.entity)return this.config.entity;
     const selected=h.states[this.config.room_selector]?.state;
     const room=this.config.rooms?.[selected];if(!room)return '';
@@ -42,7 +50,8 @@ class NestLyricDisplay extends HTMLElement {
     return (youtubeActive||(youtubeSelected&&!app&&physicalActive))?physical:primary;
   }
   resolveTimelinePlayer(h,player){
-    if(this.config.zone_entity||this.config.entity)return player;
+    if(this.config.zone_entity)return h.states[this.config.zone_entity]?.attributes?.active_player||player;
+    if(this.config.entity)return player;
     const room=this.config.rooms?.[h.states[this.config.room_selector]?.state];
     const cast=room?.cast||room?.physical||room?.music_assistant||room?.entity;
     const state=h.states[cast];const app=String(state?.attributes?.app_name||'').toLowerCase();
