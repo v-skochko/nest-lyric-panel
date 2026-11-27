@@ -1,4 +1,4 @@
-import './nest-lyric-panel.js?v=0.9.0b1';
+import './nest-lyric-panel.js?v=0.9.0';
 const DisplayMode=Object.freeze({AUTO:'auto',COLUMN:'column',COMPACT:'compact',WIDE:'wide'});
 const resolveDisplayMode=(mode,width)=>mode!==DisplayMode.AUTO?mode:width<600?DisplayMode.COLUMN:width<=1124?DisplayMode.COMPACT:DisplayMode.WIDE;
 class NestLyricDisplay extends HTMLElement {

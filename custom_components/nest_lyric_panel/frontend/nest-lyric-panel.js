@@ -1,4 +1,4 @@
-import './nest-lyric-editor.js?v=0.9.0b1';
+import './nest-lyric-editor.js?v=0.9.0';
 /* Nest Lyric Panel: modified 2026-11-24; see LICENSE and NOTICE.md. */
 const LyricsMode=Object.freeze({NOT_FOUND:0,SYNCED_TRANSLATED:1,SYNCED_ORIGINAL:2,UNSYNCED_TRANSLATED:3,UNSYNCED_ORIGINAL:4});
 class NestLyricPanel extends HTMLElement {
