@@ -9,6 +9,7 @@ class NestLyricEditor extends HTMLElement {
   put(key,value,inner=false) {
     const target=inner?(this.config.lyrics||(this.config.lyrics={})):this.config;
     if (value===''||value===undefined) delete target[key]; else target[key]=value;
+    if(this.display&&!inner&&value&&(key==='entity'||key==='zone_entity'))delete this.config[key==='entity'?'zone_entity':'entity'];
     this.emit();
   }
   section(title) { const d=document.createElement('section'); const h=document.createElement('h3'); h.textContent=title; d.append(h); this.shadowRoot.append(d); return d; }
@@ -27,18 +28,6 @@ class NestLyricEditor extends HTMLElement {
       el.addEventListener('change',()=>{if(kind==='checkbox')this.put(key,el.checked,inner);else if(kind==='number'&&el.value!==''){if(!el.checkValidity())return;this.put(key,Number(el.value),inner);}else this.put(key,el.value,inner)});
     }
     wrap.append(el);parent.append(wrap);
-  }
-  roomEditor(parent) {
-    const rooms=this.config.rooms||{};
-    for(const [name,room] of Object.entries(rooms)) {
-      const group=document.createElement('fieldset'), legend=document.createElement('legend');legend.textContent=name;group.append(legend);
-      for(const [key,uk,en] of [['music_assistant','Music Assistant','Music Assistant'],['entity','Основний плеєр (альтернатива)','Primary player (alternative)'],['physical','Фізична колонка','Physical speaker'],['cast','Cast-плеєр','Cast player']]){
-        const l=document.createElement('label'),s=document.createElement('span'),e=document.createElement('ha-entity-picker');s.textContent=this.t(uk,en);e.hass=this._hass;e.includeDomains=['media_player'];e.value=room[key]||'';
-        e.addEventListener('value-changed',ev=>{const v=ev.detail.value;if(v===(this.config.rooms?.[name]?.[key]||''))return;const out={...(this.config.rooms[name]||{})};if(v)out[key]=v;else delete out[key];this.config.rooms={...this.config.rooms,[name]:out};this.emit()}); l.append(s,e);group.append(l);
-      }
-      const del=document.createElement('button');del.type='button';del.textContent=this.t('Видалити кімнату','Remove room');del.addEventListener('click',()=>{this.config.rooms={...this.config.rooms};delete this.config.rooms[name];this.emit();this.render()});group.append(del);parent.append(group);
-    }
-    const name=document.createElement('input');name.placeholder=this.t('Назва кімнати як у перемикачі','Room name as in selector');const add=document.createElement('button');add.type='button';add.textContent=this.t('Додати кімнату','Add room');add.addEventListener('click',()=>{const n=name.value.trim();if(!n||this.config.rooms?.[n])return;this.config.rooms={...(this.config.rooms||{}),[n]:{}};this.emit();this.render()});parent.append(name,add);
   }
   render() {
     this.rendered=true;this.shadowRoot.replaceChildren();const style=document.createElement('style');style.textContent=':host{display:block;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif)}section{border-bottom:1px solid var(--divider-color);padding:10px 0}h3{font-size:1rem;font-weight:600;margin:0}label{display:flex;flex-direction:column;gap:5px;margin:12px 0}input,select,button{box-sizing:border-box;padding:10px;border:1px solid var(--divider-color);border-radius:5px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}input[type=checkbox]{width:20px;height:20px}fieldset{margin:12px 0;border:1px solid var(--divider-color);border-radius:5px}ha-entity-picker{width:100%}';this.shadowRoot.append(style);

@@ -73,6 +73,21 @@
           "error": "Error",
           "disabled": "Disabled",
           "close": "Closing"
+        },
+        "state_attributes": {
+          "reason": {
+            "name": "Reason",
+            "state": {
+              "waiting_for_playback": "Waiting for playback",
+              "display_unavailable": "Display unavailable",
+              "starting_cast": "Starting Cast",
+              "waiting_to_retry": "Waiting to retry",
+              "panel_showing": "Panel showing",
+              "closing_panel": "Closing panel",
+              "cast_request_failed": "Cast request failed",
+              "close_failed": "Could not close panel"
+            }
+          }
         }
       }
     }

@@ -15,6 +15,7 @@ for width in (600, 768, 1024, 1400):
     match = re.search(r'<pre id="result">(.*?)</pre>', html)
     assert match and match.group(1) != "waiting", "Display did not initialise"
     result = json.loads(match.group(1))
+    assert result["zoneYoutubeControl"] == "media_player.b_speaker" and result["zoneYoutubeTimeline"] == "media_player.b_cast"
     assert result["initialPlayer"] == "media_player.a_ma" and result["initialTitle"] == "Track A"
     assert result["lyricTag"] == "NEST-LYRIC-PANEL-CARD" and result["lyricOffset"] == 1
     assert result["roomPlayer"] == "media_player.b_ma"

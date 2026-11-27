@@ -58,6 +58,7 @@ h.states['media_player.b_cast'].state='paused';h.states['media_player.b_cast'].a
 h.states['media_player.b_cast']={state:'idle',attributes:{}};card.hass=h;results.backToMusic=card.timelinePlayer;
 results.calls=calls;results.width=innerWidth;results.displayWidth=card.getBoundingClientRect().width;
 const zoned=document.createElement('nest-lyric-display');document.body.append(zoned);zoned.setConfig({zone_entity:'sensor.cast_zone'});zoned.hass={...h,states:{...h.states,'sensor.cast_zone':{state:'showing',attributes:{active_player:'media_player.a_ma'}}}};results.zonePlayer=zoned.player;
+const ytZone=document.createElement('nest-lyric-display');document.body.append(ytZone);ytZone.setConfig({zone_entity:'sensor.yt_zone',rooms:{Kitchen:{physical:'media_player.b_speaker',cast:'media_player.b_cast'}}});ytZone.hass={...h,states:{...h.states,'sensor.yt_zone':{state:'showing',attributes:{active_player:'media_player.b_cast'}},'media_player.b_cast':{state:'playing',attributes:{...attrs('Artist','Track'),app_name:'YouTube Music'}}}};results.zoneYoutubeControl=ytZone.player;results.zoneYoutubeTimeline=ytZone.timelinePlayer;
 const single=document.createElement('nest-lyric-display');document.body.append(single);single.setConfig({entity:'media_player.a_ma'});single.hass=h;results.singlePlayer=single.player;
 document.querySelector('#result').textContent=JSON.stringify(results);
 </script>

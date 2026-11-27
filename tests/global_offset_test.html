@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><pre id="result">waiting</pre>
+<script type="module">
+import '../custom_components/nest_lyric_panel/frontend/nest-lyric-panel.js';
+let listener,offset=1;const h={language:'en',states:{'media_player.x':{state:'paused',attributes:{}}},connection:{subscribeEvents:async(f)=>{listener=f;return()=>{}}},callWS:async(msg)=>msg.type==='nest_lyric_panel/settings'?{sync_offset:offset}:0};
+const c=document.createElement('nest-lyric-panel-card');document.body.append(c);c.setConfig({entity:'media_player.x',sync_offset:7});c.hass=h;
+await new Promise(r=>setTimeout(r,60));const first=c.globalSyncOffset;offset=-2;listener();await new Promise(r=>setTimeout(r,60));const next=c.globalSyncOffset;
+document.querySelector('#result').textContent=JSON.stringify({first,next});c.remove();
+</script>

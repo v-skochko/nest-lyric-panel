@@ -73,6 +73,21 @@
           "error": "Помилка",
           "disabled": "Вимкнено",
           "close": "Закриття"
+        },
+        "state_attributes": {
+          "reason": {
+            "name": "Причина",
+            "state": {
+              "waiting_for_playback": "Очікування музики",
+              "display_unavailable": "Екран недоступний",
+              "starting_cast": "Запуск трансляції",
+              "waiting_to_retry": "Очікування повторної спроби",
+              "panel_showing": "Панель відображається",
+              "closing_panel": "Закриття панелі",
+              "cast_request_failed": "Не вдалося запустити трансляцію",
+              "close_failed": "Не вдалося закрити панель"
+            }
+          }
         }
       }
     }

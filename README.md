@@ -87,13 +87,14 @@ Shared lyric options are available under **Settings → Devices & services → N
 
 | Option | Default | Meaning |
 | --- | --- | --- |
+| Synchronization offset | 0 seconds | Global adjustment applied to all lyrics cards; positive values advance highlighting. |
 | Translation endpoint URL | empty | Optional HTTP(S) URL, without embedded credentials; blank disables translation. |
 | Maximum duration difference | 2 seconds | Timed lyrics are treated as unsynchronized if durations differ by more than this. |
 | Lyrics cache duration | 60 minutes | Per-instance in-memory lookup cache; 0 disables effective caching. |
 
 The optional endpoint must accept a POST body like `{"q":["Hello"],"source":"en","target":"uk","format":"text"}` and return `{"translatedText":["Привіт"]}`. Only English-to-Ukrainian is supported at present. Settings changes notify connected cards to re-evaluate the current track.
 
-The universal display card has a visual editor and supports room-to-player mappings. Its nested lyrics component is also available as a legacy standalone card. Each instance keeps its own settings. Card options:
+The universal display card has a visual editor with a Cast zone or a standalone player as its source. Existing room mappings remain supported for compatibility, including YouTube timing. Its nested lyrics component is also available as a standalone card. Card options:
 
 | Option | Default | Meaning |
 | --- | --- | --- |
@@ -101,7 +102,7 @@ The universal display card has a visual editor and supports room-to-player mappi
 | `language` | HA interface language | `en` or `uk`; other languages fall back to English. |
 | `card_height` | `320px` | Positive height in `px`, `%`, or `vh`. |
 | `display_mode` | `auto` | `auto`, `column`, `compact`, or `wide`; set on the display card. |
-| `sync_offset` | 0 | Seconds to advance the highlighting; a negative value delays it. |
+| `sync_offset` | legacy | Retained for existing cards until a global synchronization offset is configured. |
 | `show_mode` | true | Show the mode indicator. |
 
 
@@ -160,4 +161,4 @@ One Nest Lyric Panel integration entry owns the shared lyric settings and all Ca
 
 For existing installations, legacy zone entries and subentries are moved to the shared entry on startup. Zone sensor entity IDs and device IDs are preserved so existing cards continue to work. The three legacy settings entities retain their IDs without a separate device. Zones run automatically; the old zone enable switches are removed.
 
-Each zone follows the most recently started source, retries Cast at most every 30 seconds, and closes its own view after two minutes without playback. On the dashboard, set the card's `zone_entity` to the zone status sensor. Each screen should use a view configured for its zone. Existing separate automations should be disabled only after verifying the new zone.
+Each zone follows the most recently started source, clears unavailable sources, exposes a reason on its status sensor, retries Cast at most every 30 seconds, and closes its own view after two minutes without playback. On the dashboard, set the card's `zone_entity` to the zone status sensor. Each screen should use a view configured for its zone. Existing separate automations should be disabled only after verifying the new zone.
