@@ -56,7 +56,13 @@ class CastZone:
         self.notify()
 
     def owned(self, state):
-        return bool(state and state.state == 'playing' and state.attributes.get('app_id') == APP_ID and str(state.attributes.get('media_title') or '').endswith(': ' + self.config['view_title']))
+        if not state or state.state != 'playing' or state.attributes.get('app_id') != APP_ID:
+            return False
+        title = str(state.attributes.get('media_title') or '')
+        dashboard_title = self.config.get('dashboard_title')
+        if dashboard_title:
+            return title == f"{dashboard_title}: {self.config['view_title']}"
+        return title.endswith(': ' + self.config['view_title'])
 
     async def evaluate(self):
         if not self.config.get('enabled', True) or self.lock.locked():

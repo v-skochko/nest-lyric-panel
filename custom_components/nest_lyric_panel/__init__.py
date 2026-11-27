@@ -146,8 +146,17 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
     await migrate_zones(hass, entry)
     flatten_zones(hass, entry)
     detach_legacy_settings_device(hass, entry)
+    from homeassistant.components.lovelace.const import LOVELACE_DATA
+    dashboards = hass.data.get(LOVELACE_DATA)
     for subentry in zones(entry):
-        zone = CastZone(hass, dict(subentry.data))
+        zone_config = dict(subentry.data)
+        if dashboards:
+            path = zone_config.get('dashboard_path')
+            dashboard = dashboards.dashboards.get(path) or (dashboards.dashboards.get(None) if path == 'lovelace' else None)
+            title = (dashboard.config or {}).get('title') if dashboard else None
+            if title:
+                zone_config['dashboard_title'] = title
+        zone = CastZone(hass, zone_config)
         data['zones'][subentry.subentry_id] = zone
         zone.start()
     entry.async_on_unload(entry.add_update_listener(_reload_zones))

@@ -61,6 +61,14 @@ class CastTest(unittest.IsolatedAsyncioTestCase):
         await self.z.evaluate()
         self.assertEqual(self.h.services.calls, [])
 
+    async def test_different_dashboard_with_same_view_is_not_closed(self):
+        self.z.config['dashboard_title'] = 'Music'
+        self.h.states.values['screen'] = State('playing', app_id=manager.APP_ID, media_title='Other: Nest')
+        self.z.policy.update_source('music', True, 1); self.z.policy.update_source('music', False, 2)
+        self.z.policy.stopped_at = manager.time.monotonic() - 121
+        await self.z.evaluate()
+        self.assertEqual(self.h.services.calls, [])
+
     async def test_close_only_owned_view(self):
         self.h.states.values['screen'] = State('playing', app_id=manager.APP_ID, media_title='Home Assistant: Nest')
         self.z.policy.update_source('music', True, 1); self.z.policy.update_source('music', False, 2)
