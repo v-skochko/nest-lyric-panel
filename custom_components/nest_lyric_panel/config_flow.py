@@ -114,6 +114,7 @@ class NestLyricPanelOptionsFlow(config_entries.OptionsFlow):
             if _valid_url(user_input["translation_url"]):
                 shared["settings"] = dict(user_input)
                 shared["cache"].clear()
+                shared["translation_cache"].clear()
                 await shared["settings_store"].async_save(shared["settings"])
                 self.hass.bus.async_fire("nest_lyric_panel_settings_changed")
                 return self.async_create_entry(title="", data=user_input)

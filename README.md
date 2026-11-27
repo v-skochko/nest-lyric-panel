@@ -90,7 +90,7 @@ Shared lyric options are available under **Settings → Devices & services → N
 | Synchronization offset | 0 seconds | Global adjustment applied to all lyrics cards; positive values advance highlighting. |
 | Translation endpoint URL | empty | Optional HTTP(S) URL, without embedded credentials; blank disables translation. |
 | Maximum duration difference | 2 seconds | Timed lyrics are treated as unsynchronized if durations differ by more than this. |
-| Lyrics cache duration | 60 minutes | Per-instance in-memory lookup cache; 0 disables effective caching. |
+| Lyrics and translation cache duration | 60 minutes | Shared in-memory cache; 0 disables effective caching. Partial translations are reused while cached. |
 
 The optional endpoint must accept a POST body like `{"q":["Hello"],"source":"en","target":"uk","format":"text"}` and return `{"translatedText":["Привіт"]}`. Only English-to-Ukrainian is supported at present. Settings changes notify connected cards to re-evaluate the current track.
 
@@ -103,7 +103,8 @@ The universal display card has a visual editor with a Cast zone or a standalone 
 | `card_height` | `320px` | Positive height in `px`, `%`, or `vh`. |
 | `display_mode` | `auto` | `auto`, `column`, `compact`, or `wide`; set on the display card. |
 | `sync_offset` | legacy | Retained for existing cards until a global synchronization offset is configured. |
-| `show_mode` | true | Show the mode indicator. |
+| `show_mode` | true | Show the debug mode indicator. |
+| `theme` | `light` | Set to `dark` for a black background; independent of the Home Assistant theme. |
 
 
 In `auto`, a ResizeObserver tracks the card container rather than the viewport: widths below 600 CSS px use `column`, 600–1124 use `compact`, and wider containers use `wide`. Manual selection overrides these thresholds. `column` hides the artwork, player information and controls; the other layouts show them. The resolved layout controls typography, wrapping and spacing. In column layout unsynchronized lyrics use one column; full display layouts use two. These initial thresholds should be checked on actual displays.

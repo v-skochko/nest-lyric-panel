@@ -103,12 +103,22 @@ async def translate(hass,connection,msg):
     url=hass.data[DOMAIN]['settings'].get('translation_url','')
     if not url:connection.send_result(msg['id'],{'status':'skipped','translatedText':[]});return
     try:
-        session=async_get_clientsession(hass)
-        async with asyncio.timeout(60):
-            async with session.post(url,json={'q':msg['text'],'source':'en','target':'uk','format':'text'},allow_redirects=False) as resp:
-                resp.raise_for_status(); content=await resp.json(content_type=None)
-        vals=content.get('translatedText') if isinstance(content,dict) else None
-        if not isinstance(vals,list) or len(vals)!=len(msg['text']) or not all(isinstance(x,str) for x in vals):raise ValueError('Invalid translation response')
+        shared=hass.data[DOMAIN]
+        async with shared['translation_lock']:
+            cache=shared['translation_cache']; ttl=shared['settings'].get('cache_minutes',60)*60
+            now=time.monotonic(); keys=[(url,msg['full_text'],line) for line in msg['text']]
+            missing=list(dict.fromkeys(key for key in keys if key not in cache or now-cache[key][0]>=ttl))
+            if missing:
+                session=async_get_clientsession(hass)
+                async with asyncio.timeout(60):
+                    async with session.post(url,json={'q':[key[2] for key in missing],'source':'en','target':'uk','format':'text'},allow_redirects=False) as resp:
+                        resp.raise_for_status(); content=await resp.json(content_type=None)
+                translated=content.get('translatedText') if isinstance(content,dict) else None
+                if not isinstance(translated,list) or len(translated)!=len(missing) or not all(isinstance(x,str) for x in translated):raise ValueError('Invalid translation response')
+                for key,value in zip(missing,translated):
+                    if len(cache)>=4096:cache.pop(next(iter(cache)))
+                    cache[key]=(time.monotonic(),value)
+            vals=[cache[key][1] for key in keys]
         connection.send_result(msg['id'],{'status':'ok','translatedText':vals})
     except Exception as exc:
         _LOGGER.warning('Translation unavailable: %s',type(exc).__name__);connection.send_error(msg['id'],'translation_failed','Translation unavailable')
@@ -116,7 +126,7 @@ async def translate(hass,connection,msg):
 async def async_setup(hass:HomeAssistant,config):
     store = Store(hass, 1, 'nest_lyric_panel.shared_settings')
     saved = await store.async_load()
-    hass.data[DOMAIN]={'cache':{},'settings':saved or {}, 'settings_store':store, 'settings_initialized': saved is not None}
+    hass.data[DOMAIN]={'cache':{},'translation_cache':{},'translation_lock':asyncio.Lock(),'settings':saved or {}, 'settings_store':store, 'settings_initialized': saved is not None}
     frontend=Path(__file__).parent/'frontend'
     await hass.http.async_register_static_paths([
         StaticPathConfig('/nest_lyric_panel/nest-lyric-editor.js',str(frontend/'nest-lyric-editor.js'),True),

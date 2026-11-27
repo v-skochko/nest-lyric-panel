@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><pre id="result">waiting</pre>
+<script type="module">
+import '../custom_components/nest_lyric_panel/frontend/nest-lyric-display.js';
+const d=document.createElement('nest-lyric-display');document.body.append(d);
+d.style.width='900px';d.setConfig({entity:'media_player.test',display_mode:'compact',theme:'dark'});
+const panel=document.createElement('nest-lyric-panel-card');document.body.append(panel);
+panel.style.width='500px';panel.setConfig({entity:'media_player.test',display_mode:'compact',card_height:'320px',theme:'dark'});
+panel.unsynced=true;panel.hasTimedLyrics=false;panel.lines=Array.from({length:8},(_,i)=>({text:'A lyric line '+i}));panel.draw();panel.fitLyrics();
+const shortSize=parseFloat(panel.shadowRoot.querySelector('.lines').style.getPropertyValue('--fit-size'));
+panel.lines=Array.from({length:150},(_,i)=>({text:'A much longer lyric line '+i}));panel.draw();panel.fitLyrics();
+const longSize=parseFloat(panel.shadowRoot.querySelector('.lines').style.getPropertyValue('--fit-size'));
+const wrap=panel.wrapCompact('nothing but to hold but tight and more words');
+document.getElementById('result').textContent=JSON.stringify({theme:d.shadowRoot.querySelector('.stage').dataset.theme,shortSize,longSize,wrap,view:panel.shadowRoot.querySelector('.view').className});
+</script>

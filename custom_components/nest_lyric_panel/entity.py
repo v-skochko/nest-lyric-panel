@@ -28,5 +28,6 @@ class SettingsEntity:
         shared = self.hass.data[DOMAIN]
         shared['settings'][self.key] = value
         shared['cache'].clear()
+        shared['translation_cache'].clear()
         await shared['settings_store'].async_save(shared['settings'])
         self.hass.bus.async_fire('nest_lyric_panel_settings_changed')

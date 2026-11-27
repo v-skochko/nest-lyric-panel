@@ -27,22 +27,23 @@ class NestLyricEditor extends HTMLElement {
       if(kind==='checkbox')el.checked=values[key]??defaultValue??false;else el.value=values[key]??defaultValue??'';
       el.addEventListener('change',()=>{if(kind==='checkbox')this.put(key,el.checked,inner);else if(kind==='number'&&el.value!==''){if(!el.checkValidity())return;this.put(key,Number(el.value),inner);}else this.put(key,el.value,inner)});
     }
-    wrap.append(el);parent.append(wrap);
+    if(kind==='checkbox'){wrap.classList.add('check');wrap.insertBefore(el,caption);}else wrap.append(el);parent.append(wrap);
   }
   render() {
-    this.rendered=true;this.shadowRoot.replaceChildren();const style=document.createElement('style');style.textContent=':host{display:block;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif)}section{border-bottom:1px solid var(--divider-color);padding:10px 0}h3{font-size:1rem;font-weight:600;margin:0}label{display:flex;flex-direction:column;gap:5px;margin:12px 0}input,select,button{box-sizing:border-box;padding:10px;border:1px solid var(--divider-color);border-radius:5px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}input[type=checkbox]{width:20px;height:20px}fieldset{margin:12px 0;border:1px solid var(--divider-color);border-radius:5px}ha-entity-picker{width:100%}';this.shadowRoot.append(style);
+    this.rendered=true;this.shadowRoot.replaceChildren();const style=document.createElement('style');style.textContent=':host{display:block;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif)}section{border-bottom:1px solid var(--divider-color);padding:10px 0}h3{font-size:1rem;font-weight:600;margin:0}label{display:flex;flex-direction:column;gap:5px;margin:12px 0}input,select,button{box-sizing:border-box;padding:10px;border:1px solid var(--divider-color);border-radius:5px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}label.check{flex-direction:row;align-items:center;gap:10px}input[type=checkbox]{width:20px;height:20px}fieldset{margin:12px 0;border:1px solid var(--divider-color);border-radius:5px}ha-entity-picker{width:100%}';this.shadowRoot.append(style);
     const source=this.section(this.t('Джерело','Source'));
     this.field(source,this.t('Плеєр','Media player'),'entity',{kind:'entity',domains:['media_player']});
     if(this.display){
       this.field(source,this.t('Cast-зона (сенсор стану)','Cast zone (status sensor)'),'zone_entity',{kind:'entity',domains:['sensor']});
       const hint=document.createElement('p');hint.textContent=this.t('Cast-зона має пріоритет над окремим плеєром.','Cast zone takes priority over a standalone player.');source.append(hint);
     }
-    const inner=this.display, lyr=this.section(this.t('Лірика та синхронізація','Lyrics and synchronization'));
-    this.field(lyr,this.t('Показувати режим','Show mode'),'show_mode',{inner,kind:'checkbox',defaultValue:true});
+    const inner=this.display;
     const styleGroup=this.section(this.t('Вигляд','Appearance'));
     if(this.display)this.field(styleGroup,this.t('Режим розміщення','Display layout'),'display_mode',{kind:'select',choices:[['auto',this.t('Авто','Auto')],['column',this.t('Колонка','Column')],['compact',this.t('Компактний','Compact')],['wide',this.t('Широкий','Wide')]] ,defaultValue:'auto'});
+    this.field(styleGroup,this.t('Тема','Theme'),'theme',{kind:'select',choices:[['light',this.t('Світла','Light')],['dark',this.t('Чорна','Black')]],defaultValue:'light'});
     this.field(styleGroup,this.t('Мова інтерфейсу','Interface language'),'language',{inner,kind:'select',choices:[['',this.t('Як у Home Assistant','Home Assistant default')],['uk','Українська'],['en','English']]});
     this.field(styleGroup,this.t('Висота в режимі колонки','Column height'),'card_height',{placeholder:'320px'});
+    this.field(styleGroup,this.t('Режим налагодження','Debug mode'),'show_mode',{inner,kind:'checkbox',defaultValue:true});
   }
 }
 customElements.define('nest-lyric-editor',NestLyricEditor);
