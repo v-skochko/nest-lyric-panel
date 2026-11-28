@@ -26,7 +26,7 @@ Requires Home Assistant 2026.11 or later. The Marketplace is available in Home A
 
 1. In **Settings → Marketplace**, add `https://github.com/v-skochko/nest-lyric-panel` as a custom repository of type **Integration**, then install it. A GitHub connection may be needed for custom repositories.
 2. Restart Home Assistant. In **Settings → Devices & services**, add **Nest Lyric Panel**. Translation is off by default.
-3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.10.0` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
+3. In **Settings → Dashboards → Resources**, add `/nest_lyric_panel/nest-lyric-display.js?v=0.10.1` as a **JavaScript module**. It loads the shared lyrics card as a dependency. The integration must be loaded to serve these files. Reload the browser or restart the Cast view.
 4. Add the card using YAML:
 
 ```yaml
@@ -58,6 +58,13 @@ The Cast zone selects the latest active source for track metadata and playback p
 For manual installation, copy `custom_components/nest_lyric_panel` to the corresponding `custom_components` directory in your Home Assistant configuration, then follow steps 2–4. The dashboard resource is a separate step even when the integration is installed by Marketplace.
 
 The card uses the `nest-lyric-panel-card` tag and `nest_lyric_panel` domain. It is separate from the earlier private version using `music-plus-lyrics` and `vasyl_lyrics`; update dashboard configurations explicitly when migrating. Back up the old configuration first.
+
+## Removing the integration
+
+1. In **Settings → Devices & services**, open **Nest Lyric Panel**, then use the menu to delete the integration. Its Cast zones and configuration entities are removed with it.
+2. Remove cards that use Nest Lyric Panel from your dashboards. In **Settings → Dashboards → Resources**, remove the `/nest_lyric_panel/nest-lyric-display.js` resource (and any older Nest Lyric Panel resources).
+3. If installed through Marketplace, uninstall the integration there; for a manual installation, remove `custom_components/nest_lyric_panel` from the configuration directory. Restart Home Assistant.
+4. If you installed the optional translator separately and no longer need it, stop and remove its container using your Docker management tools. Its model volume is separate and may be retained or removed according to your preference.
 
 ## Options
 

@@ -20,6 +20,12 @@
           "sync_tolerance": "Maximum duration difference in seconds",
           "cache_minutes": "Lyrics and translation cache duration in minutes",
           "sync_offset": "Synchronization offset in seconds"
+        },
+        "data_description": {
+          "translation_url": "HTTP or HTTPS address of the optional English-to-Ukrainian translator. Leave empty to disable translation.",
+          "sync_offset": "Adjust lyric timing in seconds; positive values advance highlighting.",
+          "sync_tolerance": "Largest permitted difference between the track and lyric durations for synchronized lyrics.",
+          "cache_minutes": "How long lyric lookups and translations are kept in memory; zero disables reuse."
         }
       }
     },
@@ -116,12 +122,23 @@
             "dashboard_path": "Dashboard path",
             "additional_player_1": "Additional player 1",
             "additional_player_2": "Additional player 2"
+          },
+          "data_description": {
+            "name": "A name for this Cast zone.",
+            "primary_player": "The main player whose playback starts the panel.",
+            "display": "The Cast screen on which the panel appears.",
+            "dashboard_path": "The dashboard containing the view to cast.",
+            "additional_player_1": "Optional second playback source for this zone.",
+            "additional_player_2": "Optional third playback source for this zone."
           }
         },
         "view": {
           "title": "Dashboard view",
           "data": {
             "view_path": "View"
+          },
+          "data_description": {
+            "view_path": "The dashboard view to show on the Cast screen."
           }
         }
       },

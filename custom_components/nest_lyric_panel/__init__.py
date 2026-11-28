@@ -3,6 +3,8 @@ import asyncio
 import logging
 import time
 from pathlib import Path
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.components.http import StaticPathConfig
@@ -14,6 +16,19 @@ from homeassistant.helpers.storage import Store
 
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = 'nest_lyric_panel'
+
+if TYPE_CHECKING:
+    from .cast_manager import CastZone
+
+
+@dataclass
+class PanelRuntimeData:
+    """Objects owned by one loaded configuration entry."""
+
+    zones: dict[str, 'CastZone'] = field(default_factory=dict)
+
+
+PanelConfigEntry = ConfigEntry[PanelRuntimeData]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 from .lyrics import lrclib, is_english, lyrics_mode
 
@@ -97,10 +112,10 @@ async def async_setup(hass:HomeAssistant,config):
     websocket_api.async_register_command(hass,mode)
     return True
 
-async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
+async def async_setup_entry(hass:HomeAssistant,entry:PanelConfigEntry):
     from .cast_manager import CastZone
     data = hass.data[DOMAIN]
-    data.setdefault('zones', {})
+    entry.runtime_data = PanelRuntimeData()
     if not data['settings_initialized']:
         legacy = next((item for item in hass.config_entries.async_entries(DOMAIN) if item.unique_id == DOMAIN), entry)
         data['settings'] = dict(legacy.options)
@@ -123,7 +138,7 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
             if title:
                 zone_config['dashboard_title'] = title
         zone = CastZone(hass, zone_config)
-        data['zones'][subentry.subentry_id] = zone
+        entry.runtime_data.zones[subentry.subentry_id] = zone
         zone.start()
     entry.async_on_unload(entry.add_update_listener(_reload_zones))
     await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text', 'sensor', 'select', 'switch'])
@@ -132,12 +147,12 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
 async def _reload_zones(hass:HomeAssistant, entry:ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
 
-async def async_unload_entry(hass:HomeAssistant,entry:ConfigEntry):
+async def async_unload_entry(hass:HomeAssistant,entry:PanelConfigEntry):
     if entry.unique_id != DOMAIN:
         return True
     if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text', 'sensor', 'select', 'switch']):
         return False
-    live_zones = hass.data[DOMAIN].get('zones', {})
+    live_zones = entry.runtime_data.zones
     for zone in live_zones.values():
         zone.stop()
     live_zones.clear()

@@ -22,7 +22,7 @@ class Flow:
     def async_abort(self, **kw): return {'type':'abort', **kw}
     def async_create_entry(self, **kw): return {'type':'create_entry', **kw}
     def add_suggested_values_to_schema(self, schema, values): return schema
-class OptionsFlow: pass
+class OptionsFlow(Flow): pass
 sys.modules['homeassistant.config_entries'].ConfigFlow = Flow
 sys.modules['homeassistant.config_entries'].OptionsFlow = OptionsFlow
 sys.modules['homeassistant.config_entries'].ConfigSubentryFlow = Flow
@@ -42,6 +42,9 @@ class Hass:
 
 class FlowTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self): self.f=mod.CastZoneFlow();self.f.hass=Hass()
+    async def test_initial_zone_form(self):
+        self.assertEqual((await self.f.async_step_user())['type'], 'form')
+
     async def test_create_and_derive_title(self):
         data={'name':'Kitchen','primary_player':'media_player.a','additional_players':[],'display':'media_player.screen','dashboard_path':'lovelace','enabled':True}
         step=await self.f.async_step_user(data);self.assertEqual(step['step_id'],'view')
@@ -58,14 +61,84 @@ class FlowTests(unittest.IsolatedAsyncioTestCase):
         data={'name':'TV','primary_player':'media_player.a','additional_player_1':'media_player.a','display':'media_player.screen','dashboard_path':'lovelace'}
         result=await self.f.async_step_user(data)
         self.assertEqual(result['errors']['base'], 'duplicate_player')
+        data['additional_player_1'] = 'media_player.b'
+        self.assertEqual((await self.f.async_step_user(data))['step_id'], 'view')
+        self.assertEqual((await self.f.async_step_view({'view_path': 'nest-hub'}))['type'], 'create_entry')
 
     async def test_missing_or_unknown_view_is_not_created(self):
         data={'name':'Kitchen','primary_player':'media_player.a','additional_players':[],'display':'media_player.screen','dashboard_path':'lovelace','enabled':True}
         await self.f.async_step_user(data)
         result=await self.f.async_step_view({'view_path':'missing'})
         self.assertEqual(result['errors']['base'],'invalid_view')
+        self.assertEqual((await self.f.async_step_view({'view_path':'nest-hub'}))['type'], 'create_entry')
 
     async def test_reject_same_source_and_screen(self):
         data={'name':'Kitchen','primary_player':'media_player.a','additional_players':[],'display':'media_player.a','dashboard_path':'lovelace','enabled':True}
         result=await self.f.async_step_user(data);self.assertEqual(result['errors']['display'],'source_is_display')
+        data['display'] = 'media_player.screen'
+        self.assertEqual((await self.f.async_step_user(data))['step_id'], 'view')
+        self.assertEqual((await self.f.async_step_view({'view_path':'nest-hub'}))['type'], 'create_entry')
+class MainFlowTests(unittest.IsolatedAsyncioTestCase):
+    async def test_parent_flow_and_hooks(self):
+        flow = mod.NestLyricPanelConfigFlow()
+        self.assertEqual((await flow.async_step_user())['type'], 'form')
+        result = await flow.async_step_user({})
+        self.assertEqual(result['type'], 'create_entry')
+        self.assertEqual(flow.unique_id, 'nest_lyric_panel')
+        self.assertEqual(result['data'], {})
+        self.assertEqual(flow.async_get_supported_subentry_types(None)['cast_zone'], mod.CastZoneFlow)
+        self.assertIsInstance(flow.async_get_options_flow(None), mod.NestLyricPanelOptionsFlow)
+
+    async def test_existing_entry_is_rejected(self):
+        flow = mod.NestLyricPanelConfigFlow()
+        def abort(): raise RuntimeError('already_configured')
+        flow._abort_if_unique_id_configured = abort
+        with self.assertRaisesRegex(RuntimeError, 'already_configured'):
+            await flow.async_step_user({})
+
+    async def test_zone_missing_views_and_duplicate_display(self):
+        flow = mod.CastZoneFlow(); flow.hass = Hass()
+        data = {'name':'Zone', 'primary_player':'media_player.a', 'display':'media_player.screen', 'dashboard_path':'lovelace'}
+        previous = mod.zones
+        try:
+            mod.zones = lambda entry: [types.SimpleNamespace(data={'display':'media_player.screen'})]
+            self.assertEqual((await flow.async_step_user(data))['errors']['display'], 'display_in_use')
+            mod.zones = lambda entry: []
+            self.assertEqual((await flow.async_step_user(data))['step_id'], 'view')
+            self.assertEqual((await flow.async_step_view({'view_path':'nest-hub'}))['type'], 'create_entry')
+            flow.hass = types.SimpleNamespace(data={})
+            self.assertEqual((await flow.async_step_user(data))['reason'], 'no_views')
+            class BrokenDashboard:
+                config = {}
+                async def async_load(self, force): raise Exception('failed')
+            flow.hass = types.SimpleNamespace(data={'lovelace':types.SimpleNamespace(dashboards={'lovelace':BrokenDashboard()})})
+            self.assertEqual((await flow.async_step_user(data))['reason'], 'no_views')
+        finally:
+            mod.zones = previous
+
+    async def test_options_validation_and_recovery(self):
+        class Store:
+            async def async_save(self, data): self.saved = dict(data)
+        class Bus:
+            def async_fire(self, name): self.name = name
+        store, bus = Store(), Bus()
+        shared = {'settings':{}, 'cache':{'x':1}, 'translation_cache':{'x':1}, 'settings_store':store}
+        flow = mod.NestLyricPanelOptionsFlow(); flow.hass = types.SimpleNamespace(data={'nest_lyric_panel':shared}, bus=bus)
+        self.assertEqual((await flow.async_step_init())['type'], 'form')
+        data = {'translation_url':'not a url', 'sync_offset':0, 'sync_tolerance':2, 'cache_minutes':60}
+        self.assertEqual((await flow.async_step_init(data))['errors']['translation_url'], 'invalid_url')
+        data['translation_url'] = ' https://example.com/translate '
+        self.assertEqual((await flow.async_step_init(data))['type'], 'create_entry')
+        self.assertEqual(store.saved['translation_url'], 'https://example.com/translate')
+        self.assertEqual(shared['cache'], {})
+        self.assertEqual(shared['translation_cache'], {})
+        self.assertEqual(bus.name, 'nest_lyric_panel_settings_changed')
+
+    def test_url_validation(self):
+        for url in ('', 'http://example.com', 'https://example.com/path'):
+            self.assertTrue(mod._valid_url(url), url)
+        for url in ('ftp://example.com', 'http://user:pass@example.com', 'http://example.com/#fragment', 'http://[bad'):
+            self.assertFalse(mod._valid_url(url), url)
+
+
 if __name__=='__main__': unittest.main()

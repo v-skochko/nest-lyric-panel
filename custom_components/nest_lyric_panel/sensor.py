@@ -7,7 +7,7 @@ from .zones import zones
 
 async def async_setup_entry(hass, entry, async_add_entities):
     for subentry in zones(entry):
-        zone = hass.data[DOMAIN]['zones'].get(subentry.subentry_id)
+        zone = entry.runtime_data.zones.get(subentry.subentry_id)
         if zone:
             async_add_entities([ZoneSensor(entry, subentry, zone)])
 
@@ -31,7 +31,9 @@ class ZoneSensor(SensorEntity):
         return {'active_player': self.zone.policy.active_source or self.zone.config['primary_player'], 'control_player': self.zone.config.get('control_player') or self.zone.config['primary_player'], 'display': self.zone.display, 'reason': self.zone.reason}
 
     async def async_added_to_hass(self):
+        await super().async_added_to_hass()
         self.zone.listeners.add(self.async_write_ha_state)
 
     async def async_will_remove_from_hass(self):
         self.zone.listeners.discard(self.async_write_ha_state)
+        await super().async_will_remove_from_hass()
