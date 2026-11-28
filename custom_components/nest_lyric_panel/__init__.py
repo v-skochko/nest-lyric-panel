@@ -161,11 +161,9 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
     if entry.unique_id != DOMAIN:
         # Legacy zone entries are migrated only after the parent is ready.
         return True
-    from .migration import detach_legacy_settings_device, migrate_zones, flatten_zones
+    from .migration import flatten_zones
     from .zones import zones
-    await migrate_zones(hass, entry)
     flatten_zones(hass, entry)
-    detach_legacy_settings_device(hass, entry)
     from homeassistant.components.lovelace.const import LOVELACE_DATA
     dashboards = hass.data.get(LOVELACE_DATA)
     for subentry in zones(entry):
