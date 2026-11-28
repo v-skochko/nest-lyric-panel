@@ -1,6 +1,9 @@
 {
   "domain": "nest_lyric_panel",
   "name": "Nest Lyric Panel",
+  "after_dependencies": [
+    "lovelace"
+  ],
   "codeowners": [
     "@v-skochko"
   ],
@@ -8,10 +11,9 @@
   "dependencies": [
     "http"
   ],
-  "after_dependencies": ["lovelace"],
   "documentation": "https://github.com/v-skochko/nest-lyric-panel",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/v-skochko/nest-lyric-panel/issues",
-  "version": "0.9.0",
-  "single_config_entry": true
+  "single_config_entry": true,
+  "version": "0.9.0"
 }

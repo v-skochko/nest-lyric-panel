@@ -8,4 +8,6 @@ r=json.loads(m.group(1))
 assert r['theme']=='dark' and r['shortSize']>r['longSize'] and r['longSize']==12, r
 assert r['wrap']=='nothing but to hold but tight\nand more words', r
 assert 'no-timestamps' in r['view']
+assert len(r['rows']) > 1 and all(x['width'] <= x['available']+1 for x in r['rows']), r
+assert len(set(x['size'] for x in r['rows'])) > 1, r
 print('Dark theme, compact wrapping and readable fallback verified')

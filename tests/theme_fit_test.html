@@ -9,6 +9,9 @@ panel.unsynced=true;panel.hasTimedLyrics=false;panel.lines=Array.from({length:8}
 const shortSize=parseFloat(panel.shadowRoot.querySelector('.lines').style.getPropertyValue('--fit-size'));
 panel.lines=Array.from({length:150},(_,i)=>({text:'A much longer lyric line '+i}));panel.draw();panel.fitLyrics();
 const longSize=parseFloat(panel.shadowRoot.querySelector('.lines').style.getPropertyValue('--fit-size'));
+const unsyncedView=panel.shadowRoot.querySelector('.view').className;
+panel.unsynced=false;panel.lines=[{text:'short line and longer words that must wrap onto a separate line'}];panel.draw();panel.fitCompact();
+const rows=[...panel.shadowRoot.querySelectorAll('.compact-row')].map(x=>({size:parseFloat(x.style.fontSize),width:x.scrollWidth,available:x.clientWidth}));
 const wrap=panel.wrapCompact('nothing but to hold but tight and more words');
-document.getElementById('result').textContent=JSON.stringify({theme:d.shadowRoot.querySelector('.stage').dataset.theme,shortSize,longSize,wrap,view:panel.shadowRoot.querySelector('.view').className});
+document.getElementById('result').textContent=JSON.stringify({theme:d.shadowRoot.querySelector('.stage').dataset.theme,shortSize,longSize,wrap,rows,view:unsyncedView});
 </script>
