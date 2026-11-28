@@ -6,7 +6,7 @@ import unicodedata
 from enum import IntEnum
 from pathlib import Path
 
-SOURCE = Path(__file__).resolve().parents[1] / "custom_components/nest_lyric_panel/__init__.py"
+SOURCE = Path(__file__).resolve().parents[1] / "custom_components/nest_lyric_panel/lyrics.py"
 module = ast.parse(SOURCE.read_text())
 names = {"is_english", "LyricsMode", "lyrics_mode"}
 nodes = [node for node in module.body if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.name in names]
