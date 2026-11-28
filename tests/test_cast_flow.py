@@ -49,6 +49,7 @@ class FlowTests(unittest.IsolatedAsyncioTestCase):
         data={'name':'Kitchen','primary_player':'media_player.a','additional_players':[],'display':'media_player.screen','dashboard_path':'lovelace','enabled':True}
         step=await self.f.async_step_user(data);self.assertEqual(step['step_id'],'view')
         result=await self.f.async_step_view({'view_path':'nest-hub'})
+        self.assertEqual(result['unique_id'], data['display'])
         self.assertEqual(result['data']['view_title'],'Nest Hub');self.assertEqual(result['title'],'Kitchen')
     async def test_fixed_slots_keep_second_when_first_is_empty(self):
         data={'name':'TV','primary_player':'media_player.a','additional_player_2':'media_player.b','display':'media_player.screen','dashboard_path':'lovelace'}

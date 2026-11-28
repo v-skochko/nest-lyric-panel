@@ -61,6 +61,8 @@ The card uses the `nest-lyric-panel-card` tag and `nest_lyric_panel` domain. It 
 
 ## Removing the integration
 
+Home Assistant retains the shared lyric settings when you delete the integration entry. A later installation reuses them. To start fresh, open **Settings → Devices & services → Nest Lyric Panel → Configure** before deleting the entry. Clear the translation endpoint URL, set the synchronization offset to **0 seconds**, the maximum duration difference to **2 seconds**, and the cache duration to **60 minutes**, then save.
+
 1. In **Settings → Devices & services**, open **Nest Lyric Panel**, then use the menu to delete the integration. Its Cast zones and configuration entities are removed with it.
 2. Remove cards that use Nest Lyric Panel from your dashboards. In **Settings → Dashboards → Resources**, remove the `/nest_lyric_panel/nest-lyric-display.js` resource (and any older Nest Lyric Panel resources).
 3. If installed through Marketplace, uninstall the integration there; for a manual installation, remove `custom_components/nest_lyric_panel` from the configuration directory. Restart Home Assistant.
