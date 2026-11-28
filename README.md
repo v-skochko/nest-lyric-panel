@@ -53,27 +53,7 @@ lyrics:
   language: en
 ```
 
-The selected player supplies the controls. When YouTube is active on a mapped Cast player, the Cast player supplies track metadata and playback position to both progress and lyrics; otherwise the selected player supplies them. The progress bar is display-only and cannot seek. Buttons are disabled when the player does not support the relevant feature. A configurable room selector and a Music Assistant/YouTube player mapping are also supported:
-
-```yaml
-type: custom:nest-lyric-display
-room_selector: input_select.speaker_room
-source_selector: input_select.music_source
-youtube_source: YouTube
-rooms:
-  Kitchen:
-    music_assistant: media_player.kitchen_ma
-    physical: media_player.kitchen_speaker
-    cast: media_player.kitchen_cast
-  Living room:
-    music_assistant: media_player.living_room_ma
-    physical: media_player.living_room_speaker
-    cast: media_player.living_room_cast
-lyrics:
-  sync_offset: 1
-```
-
-Map the room names exactly as they appear in the selector. `physical` and `cast` are optional, defaulting to the primary player. The card chooses the physical player when the mapped Cast player is active in YouTube, or when YouTube is selected and the physical player is active. With no matching room it displays no player. The nested `lyrics` object accepts the card options below; the display sets entity and height.
+The Cast zone selects the latest active source for track metadata and playback position. Configure a separate YouTube control player in the zone when the Cast source and physical speaker are different. The progress bar is display-only and buttons are disabled when the player does not support the relevant feature.
 
 For manual installation, copy `custom_components/nest_lyric_panel` to the corresponding `custom_components` directory in your Home Assistant configuration, then follow steps 2–4. The dashboard resource is a separate step even when the integration is installed by Marketplace.
 
@@ -92,7 +72,7 @@ Shared lyric options are available under **Settings → Devices & services → N
 
 The optional endpoint must accept a POST body like `{"q":["Hello"],"source":"en","target":"uk","format":"text"}` and return `{"translatedText":["Привіт"]}`. Only English-to-Ukrainian is supported at present. Settings changes notify connected cards to re-evaluate the current track.
 
-The universal display card has a visual editor with a Cast zone or a standalone player as its source. Existing room mappings remain supported for compatibility, including YouTube timing. Its nested lyrics component is also available as a standalone card. Card options:
+The universal display card has a visual editor with a Cast zone or a standalone player as its source. Cast zones supply the active player and the optional YouTube control player. Its nested lyrics component is also available as a standalone card. Card options:
 
 | Option | Default | Meaning |
 | --- | --- | --- |

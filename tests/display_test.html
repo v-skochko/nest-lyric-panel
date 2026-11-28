@@ -24,17 +24,15 @@ const h={
   callWS:async(msg)=>msg.type.endsWith('/lookup')?{status:'found',syncedLyrics:'[00:00.00]First original\n[00:20.00]Second original',duration:100}:msg.type.endsWith('/mode')?1:{status:'ok',translatedText:msg.text.map(()=> 'Переклад')},
   hassUrl:p=>p
 };
-card.setConfig({room_selector:'input_select.test_room',source_selector:'input_select.test_source',rooms:{
-  'Room A':{music_assistant:'media_player.a_ma',physical:'media_player.a_speaker',cast:'media_player.a_cast'},
-  'Room B':{music_assistant:'media_player.b_ma',physical:'media_player.b_speaker',cast:'media_player.b_cast'}
-},lyrics:{sync_offset:1}});
+h.states['sensor.main_zone']={state:'showing',attributes:{active_player:'media_player.a_ma',control_player:'media_player.a_speaker'}};
+card.setConfig({zone_entity:'sensor.main_zone',lyrics:{sync_offset:1}});
 card.hass=h;
 await new Promise(r=>setTimeout(r,150));
 const results={initialPlayer:card.player,initialTitle:card.shadowRoot.querySelector('.name-box.song .name-text').textContent,lyricTag:card.lyric.tagName,lyricOffset:card.lyric.config.sync_offset};
 card.shadowRoot.querySelector('[data-command="media_next_track"]').click();
-h.states['input_select.test_room'].state='Room B';card.hass=h;
+h.states['sensor.main_zone'].attributes={active_player:'media_player.b_ma',control_player:'media_player.b_speaker'};card.hass=h;
 results.roomPlayer=card.player;
-h.states['media_player.b_cast']={state:'playing',attributes:{...attrs('Artist B Cast','Track B Cast'),media_position:40,app_name:'YouTube Music'}};card.hass=h;
+h.states['media_player.b_cast']={state:'playing',attributes:{...attrs('Artist B Cast','Track B Cast'),media_position:40,app_name:'YouTube Music'}};h.states['sensor.main_zone'].attributes.active_player='media_player.b_cast';card.hass=h;
 results.youtubePlayer=card.player;results.youtubeTimeline=card.timelinePlayer;results.youtubeLyricEntity=card.lyric.config.entity;results.youtubeElapsed=card.shadowRoot.querySelector('.elapsed').textContent;results.youtubeTitle=card.shadowRoot.querySelector('.name-box.song .name-text').textContent;
 card.shadowRoot.querySelector('[data-command="volume_up"]').click();
 card.shadowRoot.querySelector('[data-command="media_play_pause"]').click();
@@ -55,7 +53,7 @@ results.unknownElapsed=card.shadowRoot.querySelector('.elapsed').textContent;
 results.unknownValue=bar.getAttribute('aria-valuenow');
 h.states['media_player.b_cast'].attributes.media_title='Track Changed';h.states['media_player.b_cast'].attributes.media_content_id='new-track';h.states['media_player.b_cast'].attributes.media_position=5;card.hass=h;results.newTrackTitle=card.shadowRoot.querySelector('.name-box.song .name-text').textContent;results.newTrackElapsed=card.shadowRoot.querySelector('.elapsed').textContent;
 h.states['media_player.b_cast'].state='paused';h.states['media_player.b_cast'].attributes.media_position=45;card.hass=h;results.pausedElapsed=card.shadowRoot.querySelector('.elapsed').textContent;results.pausedTimeline=card.timelinePlayer;
-h.states['media_player.b_cast']={state:'idle',attributes:{}};card.hass=h;results.backToMusic=card.timelinePlayer;
+h.states['media_player.b_cast']={state:'idle',attributes:{}};h.states['sensor.main_zone'].attributes.active_player='media_player.b_ma';card.hass=h;results.backToMusic=card.timelinePlayer;
 results.calls=calls;results.width=innerWidth;results.displayWidth=card.getBoundingClientRect().width;
 const zoned=document.createElement('nest-lyric-display');document.body.append(zoned);zoned.setConfig({zone_entity:'sensor.cast_zone'});zoned.hass={...h,states:{...h.states,'sensor.cast_zone':{state:'showing',attributes:{active_player:'media_player.a_ma'}}}};results.zonePlayer=zoned.player;
 const ytZone=document.createElement('nest-lyric-display');document.body.append(ytZone);ytZone.setConfig({zone_entity:'sensor.yt_zone'});ytZone.hass={...h,states:{...h.states,'sensor.yt_zone':{state:'showing',attributes:{active_player:'media_player.b_cast',control_player:'media_player.b_speaker'}},'media_player.b_cast':{state:'playing',attributes:{...attrs('Artist','Track'),app_name:'YouTube Music'}}}};results.zoneYoutubeControl=ytZone.player;results.zoneYoutubeTimeline=ytZone.timelinePlayer;

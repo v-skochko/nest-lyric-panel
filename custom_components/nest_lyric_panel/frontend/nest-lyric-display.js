@@ -7,7 +7,7 @@ class NestLyricDisplay extends HTMLElement {
   constructor(){super();this.attachShadow({mode:'open'});this.player='';this.timelinePlayer='';this.currentImage='';this.timer=null;this.fitFrame=0;this.fitKey='';this.fitObserver=null;this.resizePanel=()=>{this.updateLayout();const stage=this.shadowRoot.querySelector('.stage');if(!stage)return;if(this.layoutMode===DisplayMode.COLUMN){stage.style.height=this.cardHeight();return;}const top=Math.max(0,this.getBoundingClientRect().top);const height=Math.max(180,Math.floor(window.innerHeight-top-4));stage.style.height=height+'px';stage.style.setProperty('--nest-available-height',height+'px');this.scheduleFit();};}
   connectedCallback(){if(typeof ResizeObserver!=='undefined'){this.layoutObserver=new ResizeObserver(()=>this.resizePanel());this.layoutObserver.observe(this);}window.addEventListener('resize',this.resizePanel);requestAnimationFrame(this.resizePanel);this.timer=setInterval(()=>this.updateProgress(),1000);if(typeof ResizeObserver!=='undefined'){this.fitObserver=new ResizeObserver(()=>this.scheduleFit());const p=this.shadowRoot.querySelector('.now-playing');if(p)this.fitObserver.observe(p);}}
   disconnectedCallback(){this.layoutObserver?.disconnect();this.layoutObserver=null;window.removeEventListener('resize',this.resizePanel);clearInterval(this.timer);this.timer=null;if(this.fitObserver)this.fitObserver.disconnect();if(this.fitFrame)cancelAnimationFrame(this.fitFrame);}
-  setConfig(config){this.player='';this.timelinePlayer='';this.currentImage='';this.fitKey='';if(!config.entity&&!config.zone_entity&&(!config.room_selector||!config.rooms))throw Error('Configure entity or room_selector and rooms');this.config=config;this.layoutMode=null;this.shadowRoot.innerHTML=`<style>
+  setConfig(config){this.player='';this.timelinePlayer='';this.currentImage='';this.fitKey='';if(!config.entity&&!config.zone_entity)throw Error('Configure a media player or Cast zone');this.config=config;this.layoutMode=null;this.shadowRoot.innerHTML=`<style>
     :host{display:block;height:100%;font-family:Roboto,'Arial',sans-serif;color:#191b20}
     .stage{box-sizing:border-box;display:grid;grid-template-columns:minmax(210px,34%) minmax(0,1fr);gap:6px;height:100%;min-height:0;padding:4px;background:#f7f8fa}
     .cover{display:flex;flex-direction:column;justify-content:flex-start;align-items:center;min-width:0;min-height:0;gap:4px}
@@ -35,26 +35,10 @@ class NestLyricDisplay extends HTMLElement {
       }
       return active;
     }
-    if(this.config.entity)return this.config.entity;
-    const selected=h.states[this.config.room_selector]?.state;
-    const room=this.config.rooms?.[selected];if(!room)return '';
-    const primary=room.music_assistant||room.entity;
-    const physical=room.physical||primary;
-    const cast=room.cast||physical;
-    const app=String(h.states[cast]?.attributes?.app_name||'').toLowerCase();
-    const castActive=['playing','paused','buffering'].includes(h.states[cast]?.state);
-    const physicalActive=['playing','paused','buffering'].includes(h.states[physical]?.state);
-    const youtubeActive=castActive&&app.includes('youtube');
-    const youtubeSelected=this.config.source_selector&&h.states[this.config.source_selector]?.state===(this.config.youtube_source||'YouTube');
-    return (youtubeActive||(youtubeSelected&&!app&&physicalActive))?physical:primary;
+    return this.config.entity||'';
   }
   resolveTimelinePlayer(h,player){
-    if(this.config.zone_entity)return h.states[this.config.zone_entity]?.attributes?.active_player||player;
-    if(this.config.entity)return player;
-    const room=this.config.rooms?.[h.states[this.config.room_selector]?.state];
-    const cast=room?.cast||room?.physical||room?.music_assistant||room?.entity;
-    const state=h.states[cast];const app=String(state?.attributes?.app_name||'').toLowerCase();
-    return ['playing','paused','buffering'].includes(state?.state)&&app.includes('youtube')?cast:player;
+    return this.config.zone_entity?h.states[this.config.zone_entity]?.attributes?.active_player||player:player;
   }
   updateNames(title,artist){const track=title||'',performer=artist||'';const key=JSON.stringify([track,performer]);if(key===this.fitKey)return;this.fitKey=key;for(const [selector,value] of [['.name-box.song',track],['.name-box.performer',performer]]){const box=this.shadowRoot.querySelector(selector);box.hidden=!value;box.style.display=value?'flex':'none';box.querySelector('.name-text').textContent=value;}this.fitNames();this.scheduleFit();}
   scheduleFit(){if(this.fitFrame)cancelAnimationFrame(this.fitFrame);this.fitFrame=requestAnimationFrame(()=>{this.fitFrame=0;this.fitNames();});}
