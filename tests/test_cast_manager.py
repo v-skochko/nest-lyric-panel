@@ -67,6 +67,62 @@ class CastTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.z.reason, 'mute_unconfirmed')
         self.assertFalse(any(call[0] == 'cast' for call in self.h.services.calls))
 
+    async def test_failure_reason_survives_retry_wait(self):
+        self.h.states.values['screen'] = State('idle')
+        self.z.policy.update_source('music', True, 1)
+        await self.z.evaluate()
+        self.assertEqual(self.z.reason, 'mute_unconfirmed')
+        await self.z.evaluate()
+        self.assertEqual(self.z.status, 'waiting_retry')
+        self.assertEqual(self.z.reason, 'mute_unconfirmed')
+
+    async def test_unconfirmed_cast_is_reported(self):
+        self.z.config['mute_before_cast'] = False
+        self.z.policy.update_source('music', True, 1)
+        original = manager.asyncio.sleep
+        async def no_sleep(_): pass
+        manager.asyncio.sleep = no_sleep
+        try: await self.z.evaluate()
+        finally: manager.asyncio.sleep = original
+        self.assertEqual(self.z.reason, 'cast_not_confirmed')
+        await self.z.evaluate()
+        self.assertEqual(self.z.reason, 'cast_not_confirmed')
+
+    async def test_stale_queue_cannot_override_speaker_track(self):
+        self.z = manager.CastZone(self.h, {'name':'Kitchen', 'display':'screen', 'primary_player':'ma', 'additional_players':['wiim', 'cast'], 'control_player':'wiim', 'dashboard_path':'lovelace', 'view_path':'nest', 'view_title':'Nest'})
+        self.h.states.values.update({
+            'ma': State('playing', media_title='Old', media_artist='Other'),
+            'wiim': State('playing', media_title='Current', media_artist='Artist'),
+            'cast': State('playing', media_title='Current', media_artist='Artist'),
+        })
+        self.z.policy.update_source('wiim', True, 1)
+        self.z.policy.update_source('cast', True, 2)
+        self.z.policy.update_source('ma', True, 3)
+        self.assertEqual(self.z.policy.active_source, 'ma')
+        self.assertEqual(self.z.active_source, 'cast')
+        self.h.states.values['wiim'].attributes.update(media_title='Old', media_artist='Other')
+        self.assertEqual(self.z.active_source, 'ma')
+
+    async def test_sleeping_screen_without_mute_state_can_cast(self):
+        self.h.states.values['screen'] = State('off')
+        self.z.policy.update_source('music', True, 1)
+        original = manager.asyncio.sleep
+        async def no_sleep(_): pass
+        manager.asyncio.sleep = no_sleep
+        try: await self.z.evaluate()
+        finally: manager.asyncio.sleep = original
+        self.assertEqual([call[1] for call in self.h.services.calls], ['show_lovelace_view'])
+
+    async def test_buffering_keeps_active_source(self):
+        self.z = manager.CastZone(self.h, {'name':'Kitchen', 'display':'screen', 'primary_player':'old', 'additional_players':['youtube'], 'dashboard_path':'lovelace', 'view_path':'nest', 'view_title':'Nest'})
+        self.z.policy.update_source('old', True, 1)
+        self.z.policy.update_source('youtube', True, 2)
+        self.z.config['enabled'] = False
+        await self.z.changed(types.SimpleNamespace(data={'entity_id':'youtube', 'new_state':State('buffering')}))
+        self.assertEqual(self.z.policy.active_source, 'youtube')
+        await self.z.changed(types.SimpleNamespace(data={'entity_id':'youtube', 'new_state':State('playing')}))
+        self.assertEqual(self.z.policy.active_source, 'youtube')
+
     async def test_can_cast_without_muting(self):
         self.z.config['mute_before_cast'] = False
         self.z.policy.update_source('music', True, 1)

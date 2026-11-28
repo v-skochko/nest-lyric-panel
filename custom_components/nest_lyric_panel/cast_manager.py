@@ -23,13 +23,34 @@ class CastZone:
         self.reason = 'waiting_for_playback'
         self.listeners = set()
 
+    @property
+    def active_source(self):
+        """Prefer the source reporting the track actually seen by the player."""
+        control = self.config.get('control_player')
+        state = self.hass.states.get(control) if control else None
+        if state and state.state in ('playing', 'buffering'):
+            title = state.attributes.get('media_title')
+            artist = state.attributes.get('media_artist')
+            if title and artist:
+                matches = []
+                for entity in self.policy.playing:
+                    candidate = self.hass.states.get(entity)
+                    if candidate and candidate.attributes.get('media_title') == title and candidate.attributes.get('media_artist') == artist:
+                        matches.append(entity)
+                if matches:
+                    # The hardware player often has no usable position; prefer
+                    # the corresponding Cast or Music Assistant session.
+                    return max(matches, key=lambda entity: (entity != control, self.policy.playing[entity]))
+        return self.policy.active_source
+
     def start(self):
         now = time.monotonic()
         for entity in self.policy.sources:
             state = self.hass.states.get(entity)
             if state and state.state == 'playing':
                 self.policy.update_source(entity, True, now)
-        self.unsubscribers.append(async_track_state_change_event(self.hass, [*self.policy.sources, self.display], self.changed))
+        watched = list(dict.fromkeys([*self.policy.sources, self.display, *([self.config['control_player']] if self.config.get('control_player') else [])]))
+        self.unsubscribers.append(async_track_state_change_event(self.hass, watched, self.changed))
         self.unsubscribers.append(async_track_time_interval(self.hass, self.tick, timedelta(seconds=5)))
         self.hass.async_create_task(self.evaluate())
 
@@ -43,7 +64,11 @@ class CastZone:
         entity = event.data['entity_id']
         if entity in self.policy.sources:
             state = event.data.get('new_state')
-            self.policy.update_source(entity, bool(state and state.state == 'playing'), time.monotonic())
+            # A track transition often briefly reports buffering; keep the
+            # current session rather than falling back to a stale source.
+            playing = bool(state and (state.state == 'playing' or
+                (state.state == 'buffering' and entity in self.policy.playing)))
+            self.policy.update_source(entity, playing, time.monotonic())
         await self.evaluate()
         self.notify()
 
@@ -70,15 +95,18 @@ class CastZone:
         async with self.lock:
             state = self.hass.states.get(self.display)
             decision = self.policy.decision(time.monotonic(), self.owned(state), bool(state and state.state not in ('unknown', 'unavailable')))
+            previous_reason = self.reason
             self.status = decision
             self.reason = {'idle':'waiting_for_playback','unavailable':'display_unavailable','cast':'starting_cast','waiting_retry':'waiting_to_retry','showing':'panel_showing','close':'closing_panel'}.get(decision, decision)
+            if decision == 'waiting_retry' and previous_reason in ('mute_unconfirmed', 'cast_request_failed', 'cast_not_confirmed'):
+                self.reason = previous_reason
             if decision == 'cast':
                 self.policy.attempted(time.monotonic())
                 was_muted = state.attributes.get('is_volume_muted')
                 muted_by_us = False
                 try:
                     if self.config.get('mute_before_cast', True):
-                        if was_muted is None:
+                        if was_muted is None and state.state != 'off':
                             self.status, self.reason = 'error', 'mute_unconfirmed'
                             return
                         if was_muted is False:
@@ -99,6 +127,8 @@ class CastZone:
                     if self.owned(self.hass.states.get(self.display)):
                         self.status = 'showing'
                         self.reason = 'panel_showing'
+                    else:
+                        self.status, self.reason = 'error', 'cast_not_confirmed'
                 except Exception:
                     self.status = 'error'
                     self.reason = 'cast_request_failed'

@@ -52,19 +52,19 @@
     },
     "select": {
       "primary_player": {
-        "name": "Екран і плеєри · 2. Основний"
+        "name": "Основний плеєр"
       },
       "display": {
-        "name": "Екран і плеєри · 1. Екран"
+        "name": "Екран"
       },
       "dashboard_path": {
-        "name": "Дашборд · 1. Дашборд"
+        "name": "Дашборд"
       },
       "view_path": {
-        "name": "Дашборд · 2. Сторінка"
+        "name": "Сторінка"
       },
       "additional_player": {
-        "name": "Екран і плеєри · {order}. Додатковий {number}"
+        "name": "Додатковий плеєр {number}"
       },
       "control_player": {
         "name": "Плеєр для керування YouTube"
@@ -94,7 +94,9 @@
               "panel_showing": "Панель відображається",
               "closing_panel": "Закриття панелі",
               "cast_request_failed": "Не вдалося запустити трансляцію",
-              "close_failed": "Не вдалося закрити панель"
+              "close_failed": "Не вдалося закрити панель",
+              "mute_unconfirmed": "Не вдалося підтвердити вимкнення звуку",
+              "cast_not_confirmed": "Екран не підтвердив запуск панелі"
             }
           }
         }

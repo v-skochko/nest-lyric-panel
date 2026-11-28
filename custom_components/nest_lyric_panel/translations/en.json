@@ -52,19 +52,19 @@
     },
     "select": {
       "primary_player": {
-        "name": "Screen and players · 2. Primary"
+        "name": "Primary player"
       },
       "display": {
-        "name": "Screen and players · 1. Screen"
+        "name": "Screen"
       },
       "dashboard_path": {
-        "name": "Dashboard · 1. Dashboard"
+        "name": "Dashboard"
       },
       "view_path": {
-        "name": "Dashboard · 2. View"
+        "name": "View"
       },
       "additional_player": {
-        "name": "Screen and players · {order}. Additional {number}"
+        "name": "Additional player {number}"
       },
       "control_player": {
         "name": "YouTube control player"
@@ -94,7 +94,9 @@
               "panel_showing": "Panel showing",
               "closing_panel": "Closing panel",
               "cast_request_failed": "Cast request failed",
-              "close_failed": "Could not close panel"
+              "close_failed": "Could not close panel",
+              "mute_unconfirmed": "Could not confirm mute",
+              "cast_not_confirmed": "Display did not confirm the panel"
             }
           }
         }

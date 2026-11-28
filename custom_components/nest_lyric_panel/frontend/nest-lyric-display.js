@@ -31,7 +31,10 @@ class NestLyricDisplay extends HTMLElement {
       const active=h.states[this.config.zone_entity]?.attributes?.active_player||'';
       const app=String(h.states[active]?.attributes?.app_name||'').toLowerCase();
       if(app.includes('youtube')){
-        return h.states[this.config.zone_entity]?.attributes?.control_player||active;
+        const control=h.states[this.config.zone_entity]?.attributes?.control_player||active;
+        const a=h.states[active]?.attributes||{}, c=h.states[control]?.attributes||{};
+        const sameTrack=a.media_title&&a.media_artist&&a.media_title===c.media_title&&a.media_artist===c.media_artist;
+        return sameTrack?control:active;
       }
       return active;
     }
