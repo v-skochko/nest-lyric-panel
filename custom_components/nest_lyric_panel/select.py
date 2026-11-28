@@ -1,7 +1,7 @@
 """Zone configuration controls on the Home Assistant device page."""
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.lovelace.const import LOVELACE_DATA
-from homeassistant.const import EntityCategory, EVENT_STATE_CHANGED
+from homeassistant.const import EntityCategory, EVENT_STATE_CHANGED, EVENT_LOVELACE_UPDATED
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import DeviceInfo
@@ -10,7 +10,7 @@ from . import DOMAIN
 from .zones import zones, update_zone
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def load_views(hass):
     dashboards = hass.data.get(LOVELACE_DATA)
     views = {}
     if dashboards:
@@ -23,6 +23,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
             except HomeAssistantError:
                 continue
             views[key] = {v['path']: v.get('title') or v['path'] for v in config.get('views', []) if v.get('path')}
+    return views
+
+
+async def async_setup_entry(hass, entry, async_add_entities):
+    views = await load_views(hass)
     for sub in zones(entry):
         keys = ['primary_player', 'control_player', 'display', 'dashboard_path', 'view_path']
         keys.extend(('additional_player_1', 'additional_player_2'))
@@ -46,6 +51,12 @@ class ZoneSelect(SelectEntity):
         await super().async_added_to_hass()
         if self.key in ('primary_player', 'control_player', 'display') or self.slot is not None:
             self.async_on_remove(self.hass.bus.async_listen(EVENT_STATE_CHANGED, self._players_changed))
+        if self.key in ('dashboard_path', 'view_path'):
+            self.async_on_remove(self.hass.bus.async_listen(EVENT_LOVELACE_UPDATED, self._views_changed))
+
+    async def _views_changed(self, _event):
+        self.views = await load_views(self.hass)
+        self.async_write_ha_state()
 
     @callback
     def _players_changed(self, event):
