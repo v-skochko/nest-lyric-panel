@@ -37,7 +37,7 @@ class CacheTests(unittest.IsolatedAsyncioTestCase):
         session = Session()
         scope["async_get_clientsession"] = lambda hass: session
         shared = {"settings": {"translation_url": "http://translate", "cache_minutes": 60},
-                  "translation_cache": {}, "translation_lock": asyncio.Lock()}
+                  "translation_cache": {}, "translation_locks": {}}
         hass = SimpleNamespace(data={"nest_lyric_panel": shared})
         async def request(lines):
             conn = Connection()

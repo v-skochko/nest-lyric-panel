@@ -104,10 +104,16 @@ async def translate(hass,connection,msg):
     if not url:connection.send_result(msg['id'],{'status':'skipped','translatedText':[]});return
     try:
         shared=hass.data[DOMAIN]
-        async with shared['translation_lock']:
+        lock_key=(url,msg['full_text'])
+        locks=shared['translation_locks']
+        item=locks.setdefault(lock_key, [asyncio.Lock(), 0])
+        item[1]+=1
+        try:
+          async with item[0]:
             cache=shared['translation_cache']; ttl=shared['settings'].get('cache_minutes',60)*60
             now=time.monotonic(); keys=[(url,msg['full_text'],line) for line in msg['text']]
             missing=list(dict.fromkeys(key for key in keys if key not in cache or now-cache[key][0]>=ttl))
+            results={key:cache[key][1] for key in keys if key not in missing}
             if missing:
                 session=async_get_clientsession(hass)
                 async with asyncio.timeout(60):
@@ -118,7 +124,11 @@ async def translate(hass,connection,msg):
                 for key,value in zip(missing,translated):
                     if len(cache)>=4096:cache.pop(next(iter(cache)))
                     cache[key]=(time.monotonic(),value)
-            vals=[cache[key][1] for key in keys]
+                    results[key]=value
+            vals=[results[key] for key in keys]
+        finally:
+            item[1]-=1
+            if not item[1]:locks.pop(lock_key,None)
         connection.send_result(msg['id'],{'status':'ok','translatedText':vals})
     except Exception as exc:
         _LOGGER.warning('Translation unavailable: %s',type(exc).__name__);connection.send_error(msg['id'],'translation_failed','Translation unavailable')
@@ -126,7 +136,7 @@ async def translate(hass,connection,msg):
 async def async_setup(hass:HomeAssistant,config):
     store = Store(hass, 1, 'nest_lyric_panel.shared_settings')
     saved = await store.async_load()
-    hass.data[DOMAIN]={'cache':{},'translation_cache':{},'translation_lock':asyncio.Lock(),'settings':saved or {}, 'settings_store':store, 'settings_initialized': saved is not None}
+    hass.data[DOMAIN]={'cache':{},'translation_cache':{},'translation_locks':{},'settings':saved or {}, 'settings_store':store, 'settings_initialized': saved is not None}
     frontend=Path(__file__).parent/'frontend'
     await hass.http.async_register_static_paths([
         StaticPathConfig('/nest_lyric_panel/nest-lyric-editor.js',str(frontend/'nest-lyric-editor.js'),True),
@@ -170,7 +180,7 @@ async def async_setup_entry(hass:HomeAssistant,entry:ConfigEntry):
         data['zones'][subentry.subentry_id] = zone
         zone.start()
     entry.async_on_unload(entry.add_update_listener(_reload_zones))
-    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text', 'sensor', 'select'])
+    await hass.config_entries.async_forward_entry_setups(entry, ['number', 'text', 'sensor', 'select', 'switch'])
     return True
 
 async def _reload_zones(hass:HomeAssistant, entry:ConfigEntry):
@@ -179,7 +189,7 @@ async def _reload_zones(hass:HomeAssistant, entry:ConfigEntry):
 async def async_unload_entry(hass:HomeAssistant,entry:ConfigEntry):
     if entry.unique_id != DOMAIN:
         return True
-    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text', 'sensor', 'select']):
+    if not await hass.config_entries.async_unload_platforms(entry, ['number', 'text', 'sensor', 'select', 'switch']):
         return False
     live_zones = hass.data[DOMAIN].get('zones', {})
     for zone in live_zones.values():

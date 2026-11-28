@@ -59,6 +59,9 @@
       },
       "additional_player": {
         "name": "Screen and players · {order}. Additional {number}"
+      },
+      "control_player": {
+        "name": "YouTube control player"
       }
     },
     "sensor": {
@@ -89,6 +92,11 @@
             }
           }
         }
+      }
+    },
+    "switch": {
+      "mute_before_cast": {
+        "name": "Mute screen before casting"
       }
     }
   },

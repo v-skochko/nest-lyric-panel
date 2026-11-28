@@ -59,6 +59,9 @@
       },
       "additional_player": {
         "name": "Екран і плеєри · {order}. Додатковий {number}"
+      },
+      "control_player": {
+        "name": "Плеєр для керування YouTube"
       }
     },
     "sensor": {
@@ -89,6 +92,11 @@
             }
           }
         }
+      }
+    },
+    "switch": {
+      "mute_before_cast": {
+        "name": "Вимикати звук екрана під час запуску"
       }
     }
   },

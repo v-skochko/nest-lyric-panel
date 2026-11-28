@@ -24,7 +24,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 continue
             views[key] = {v['path']: v.get('title') or v['path'] for v in config.get('views', []) if v.get('path')}
     for sub in zones(entry):
-        keys = ['primary_player', 'display', 'dashboard_path', 'view_path']
+        keys = ['primary_player', 'control_player', 'display', 'dashboard_path', 'view_path']
         keys.extend(('additional_player_1', 'additional_player_2'))
         async_add_entities([ZoneSelect(entry, sub, key, views) for key in keys])
 
@@ -44,7 +44,7 @@ class ZoneSelect(SelectEntity):
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()
-        if self.key in ('primary_player', 'display') or self.slot is not None:
+        if self.key in ('primary_player', 'control_player', 'display') or self.slot is not None:
             self.async_on_remove(self.hass.bus.async_listen(EVENT_STATE_CHANGED, self._players_changed))
 
     @callback
@@ -76,6 +76,8 @@ class ZoneSelect(SelectEntity):
 
     @property
     def current_option(self):
+        if self.key == 'control_player':
+            return self.sub.data.get('control_player') or self.sub.data.get('primary_player')
         if self.slot is not None:
             players = self.sub.data.get('additional_player_slots', self.sub.data.get('additional_players', [])[:2])
             return (players[self.slot] or '—') if self.slot < len(players) else '—'

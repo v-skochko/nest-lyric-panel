@@ -54,6 +54,29 @@ class CastTest(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(self.z.policy.active_source)
         self.assertIsNotNone(self.z.policy.stopped_at)
 
+    async def test_never_casts_before_mute_is_confirmed(self):
+        self.z.policy.update_source('music', True, 1)
+        async def call(domain, service, data, blocking=True):
+            self.h.services.calls.append((domain, service, dict(data)))
+        self.h.services.async_call = call
+        original = manager.asyncio.sleep
+        async def no_sleep(_): pass
+        manager.asyncio.sleep = no_sleep
+        try: await self.z.evaluate()
+        finally: manager.asyncio.sleep = original
+        self.assertEqual(self.z.reason, 'mute_unconfirmed')
+        self.assertFalse(any(call[0] == 'cast' for call in self.h.services.calls))
+
+    async def test_can_cast_without_muting(self):
+        self.z.config['mute_before_cast'] = False
+        self.z.policy.update_source('music', True, 1)
+        original = manager.asyncio.sleep
+        async def no_sleep(_): pass
+        manager.asyncio.sleep = no_sleep
+        try: await self.z.evaluate()
+        finally: manager.asyncio.sleep = original
+        self.assertEqual([call[1] for call in self.h.services.calls], ['show_lovelace_view'])
+
     async def test_never_closes_other_app(self):
         self.h.states.values['screen'] = State('playing', app_id='other', media_title='Video')
         self.z.policy.update_source('music', True, 1); self.z.policy.update_source('music', False, 2)

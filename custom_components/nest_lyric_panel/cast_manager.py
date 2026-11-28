@@ -77,12 +77,21 @@ class CastZone:
                 was_muted = state.attributes.get('is_volume_muted')
                 muted_by_us = False
                 try:
-                    if was_muted is False:
-                        try:
-                            await self.hass.services.async_call('media_player', 'volume_mute', {'entity_id': self.display, 'is_volume_muted': True}, blocking=True)
+                    if self.config.get('mute_before_cast', True):
+                        if was_muted is None:
+                            self.status, self.reason = 'error', 'mute_unconfirmed'
+                            return
+                        if was_muted is False:
                             muted_by_us = True
-                        except Exception:
-                            _LOGGER.warning('Could not mute Cast display %s', self.display)
+                            await self.hass.services.async_call('media_player', 'volume_mute', {'entity_id': self.display, 'is_volume_muted': True}, blocking=True)
+                            for _ in range(30):
+                                current = self.hass.states.get(self.display)
+                                if current and current.attributes.get('is_volume_muted') is True:
+                                    break
+                                await asyncio.sleep(0.1)
+                            else:
+                                self.status, self.reason = 'error', 'mute_unconfirmed'
+                                return
                     if not self.config.get('enabled', True) or not self.policy.playing:
                         return
                     await self.hass.services.async_call('cast', 'show_lovelace_view', {'entity_id': self.display, 'dashboard_path': self.config['dashboard_path'], 'view_path': self.config['view_path']}, blocking=True)

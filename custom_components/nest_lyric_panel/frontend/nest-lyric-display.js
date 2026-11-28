@@ -31,8 +31,7 @@ class NestLyricDisplay extends HTMLElement {
       const active=h.states[this.config.zone_entity]?.attributes?.active_player||'';
       const app=String(h.states[active]?.attributes?.app_name||'').toLowerCase();
       if(app.includes('youtube')){
-        const room=Object.values(this.config.rooms||{}).find(r=>r.cast===active);
-        if(room?.physical)return room.physical;
+        return h.states[this.config.zone_entity]?.attributes?.control_player||active;
       }
       return active;
     }
