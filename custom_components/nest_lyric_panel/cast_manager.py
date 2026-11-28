@@ -41,6 +41,10 @@ class CastZone:
                     # The hardware player often has no usable position; prefer
                     # the corresponding Cast or Music Assistant session.
                     return max(matches, key=lambda entity: (entity != control, self.policy.playing[entity]))
+                # Never substitute a conflicting track from a stale queue.
+                # The physical player is a safer temporary source until the
+                # corresponding session publishes matching metadata.
+                return control
         return self.policy.active_source
 
     def start(self):
